@@ -61,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
         // 判断是否设置了服务器ip、tcp服务端口
         SharedPreferences sharedPreferences = getSharedPreferences("Settings", Context.MODE_PRIVATE);
         SettingFragment.serverIpAddressString = sharedPreferences.getString("serverIpAddress", null);
+        SettingFragment.serverPortString = sharedPreferences.getString("serverPort", null);
         SettingFragment.tcpServerPortString = sharedPreferences.getString("tcpServerPort", null);
         if (SettingFragment.serverIpAddressString == null) {
             Toast.makeText(MainActivity.this, "请先设置服务器ip地址！", Toast.LENGTH_SHORT).show();

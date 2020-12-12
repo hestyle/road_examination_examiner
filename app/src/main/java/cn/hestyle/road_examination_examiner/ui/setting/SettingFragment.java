@@ -19,8 +19,10 @@ import cn.hestyle.road_examination_examiner.util.NetworkHelp;
 public class SettingFragment extends Fragment {
     public static String serverIpAddressString = null;
     public static String tcpServerPortString = null;
+    public static String serverPortString = null;
 
     private EditText serverIpAddressEditText = null;
+    private EditText serverPortEditText = null;
     private EditText tcpServerPortEditText = null;
     private Button saveSettingsButton = null;
 
@@ -28,6 +30,7 @@ public class SettingFragment extends Fragment {
                              ViewGroup container, Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_setting, container, false);
         serverIpAddressEditText = root.findViewById(R.id.serverIpAddressEditText);
+        serverPortEditText = root.findViewById(R.id.serverPortEditText);
         tcpServerPortEditText = root.findViewById(R.id.tcpServerPortEditText);
         saveSettingsButton = root.findViewById(R.id.saveSettingsButton);
 
@@ -37,10 +40,15 @@ public class SettingFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 String serverIpAddressStringTmp = serverIpAddressEditText.getText().toString();
+                String serverPortStringTmp = serverPortEditText.getText().toString();
                 String tcpServerPortStringTmp = tcpServerPortEditText.getText().toString();
                 // 检查ip、port的合法性
                 if (!NetworkHelp.isValidIpv4Address(serverIpAddressStringTmp)) {
                     Toast.makeText(SettingFragment.this.getContext(), "服务器ip地址非法！", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if (!NetworkHelp.isValidPort(serverPortStringTmp)) {
+                    Toast.makeText(SettingFragment.this.getContext(), "服务器端口非法！", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 if (!NetworkHelp.isValidPort(tcpServerPortStringTmp)) {
@@ -49,15 +57,17 @@ public class SettingFragment extends Fragment {
                 }
                 // 更新SharedPreferences
                 SettingFragment.serverIpAddressString = serverIpAddressStringTmp;
+                SettingFragment.serverPortString = serverPortStringTmp;
                 SettingFragment.tcpServerPortString = tcpServerPortStringTmp;
                 SharedPreferences sharedPreferences = getActivity().getSharedPreferences("Settings", Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putString("serverIpAddress", serverIpAddressStringTmp);
+                editor.putString("serverPort", serverPortStringTmp);
                 editor.putString("tcpServerPort", tcpServerPortStringTmp);
                 if (editor.commit()) {
-                    Toast.makeText(SettingFragment.this.getContext(), "保存成功！", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(SettingFragment.this.getActivity(), "保存成功！", Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(SettingFragment.this.getContext(), "保存失败！", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(SettingFragment.this.getActivity(), "保存失败！", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -70,9 +80,13 @@ public class SettingFragment extends Fragment {
         // 读取SharedPreferences
         SharedPreferences sharedPreferences = getActivity().getSharedPreferences("Settings", Context.MODE_PRIVATE);
         SettingFragment.serverIpAddressString = sharedPreferences.getString("serverIpAddress", null);
+        SettingFragment.serverPortString = sharedPreferences.getString("serverPort", null);
         SettingFragment.tcpServerPortString = sharedPreferences.getString("tcpServerPort", null);
         if (SettingFragment.serverIpAddressString != null) {
             serverIpAddressEditText.setText(SettingFragment.serverIpAddressString);
+        }
+        if (SettingFragment.serverPortString != null) {
+            serverPortEditText.setText(SettingFragment.serverPortString);
         }
         if (SettingFragment.tcpServerPortString != null) {
             tcpServerPortEditText.setText(SettingFragment.tcpServerPortString);

@@ -52,11 +52,11 @@ public class LoginActivity extends AppCompatActivity {
                 }
                 // 访问服务器，提交登录表单
                 FormBody formBody = new FormBody.Builder()
-                        .add("id", "362501888808088888")
-                        .add("password", "123456")
+                        .add("id", loginIdEditText.getText().toString())
+                        .add("password", loginPasswordEditEditText.getText().toString())
                         .build();
                 Request request = new Request.Builder()
-                        .url("http://" + SettingFragment.serverIpAddressString + ":9090/road_examination_manager/examiner/login.do")
+                        .url("http://" + SettingFragment.serverIpAddressString + ":" + SettingFragment.serverPortString + "/road_examination_manager/examiner/login.do")
                         .post(formBody)
                         .build();
                 OkHttpClient httpClient = new OkHttpClient();
@@ -64,7 +64,12 @@ public class LoginActivity extends AppCompatActivity {
                 call.enqueue(new Callback() {
                     @Override
                     public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                        Toast.makeText(LoginActivity.this, "登录失败！", Toast.LENGTH_SHORT).show();
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(LoginActivity.this, "登录失败！", Toast.LENGTH_SHORT).show();
+                            }
+                        });
                     }
 
                     @Override
