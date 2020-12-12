@@ -1,10 +1,12 @@
 package cn.hestyle.road_examination_examiner.ui.my_invigilation;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.RadioButton;
@@ -25,6 +27,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
+import cn.hestyle.road_examination_examiner.ExamDetailActivity;
 import cn.hestyle.road_examination_examiner.LoginActivity;
 import cn.hestyle.road_examination_examiner.R;
 import cn.hestyle.road_examination_examiner.entity.Exam;
@@ -74,6 +77,14 @@ public class MyInvigilationFragment extends Fragment {
         examListView = root.findViewById(R.id.examListView);
         examAdapter = new ExamAdapter();
         examListView.setAdapter(examAdapter);
+        examListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent intent = new Intent(MyInvigilationFragment.this.getActivity(), ExamDetailActivity.class);
+                intent.putExtra("exam", inListData.get(position));
+                startActivity(intent);
+            }
+        });
 
         return root;
     }
