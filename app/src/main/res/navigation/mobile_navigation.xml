@@ -3,23 +3,23 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/nav_home">
+    app:startDestination="@+id/nav_my_invigilation">
 
     <fragment
-        android:id="@+id/nav_home"
-        android:name="cn.hestyle.road_examination_examiner.ui.home.HomeFragment"
-        android:label="@string/menu_home"
-        tools:layout="@layout/fragment_home" />
+        android:id="@+id/nav_my_invigilation"
+        android:name="cn.hestyle.road_examination_examiner.ui.my_invigilation.MyInvigilationFragment"
+        android:label="@string/menu_my_invigilation"
+        tools:layout="@layout/fragment_my_invigilation" />
 
     <fragment
-        android:id="@+id/nav_gallery"
-        android:name="cn.hestyle.road_examination_examiner.ui.gallery.GalleryFragment"
-        android:label="@string/menu_gallery"
-        tools:layout="@layout/fragment_gallery" />
+        android:id="@+id/nav_my_account"
+        android:name="cn.hestyle.road_examination_examiner.ui.my_account.MyAccountFragment"
+        android:label="@string/menu_my_account"
+        tools:layout="@layout/fragment_my_account" />
 
     <fragment
-        android:id="@+id/nav_slideshow"
-        android:name="cn.hestyle.road_examination_examiner.ui.slideshow.SlideshowFragment"
-        android:label="@string/menu_slideshow"
-        tools:layout="@layout/fragment_slideshow" />
+        android:id="@+id/nav_setting"
+        android:name="cn.hestyle.road_examination_examiner.ui.setting.SettingFragment"
+        android:label="@string/menu_setting"
+        tools:layout="@layout/fragment_setting" />
 </navigation>
