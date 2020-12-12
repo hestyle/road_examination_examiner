@@ -1,16 +1,16 @@
-package cn.hestyle.road_examination_examiner.ui.slideshow;
+package cn.hestyle.road_examination_examiner.ui.setting;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-public class SlideshowViewModel extends ViewModel {
+public class SettingViewModel extends ViewModel {
 
     private MutableLiveData<String> mText;
 
-    public SlideshowViewModel() {
+    public SettingViewModel() {
         mText = new MutableLiveData<>();
-        mText.setValue("This is slideshow fragment");
+        mText.setValue("This is setting fragment");
     }
 
     public LiveData<String> getText() {
