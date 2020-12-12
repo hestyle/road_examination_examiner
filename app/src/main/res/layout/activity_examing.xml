@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:layout_margin="10dp"
+    tools:context=".ExamingActivity">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="科目三考试"
+        android:textSize="20sp" />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="考生信息"
+        android:textSize="16sp" />
+    <include layout="@layout/content_candidate"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="考试计时"
+            android:gravity="right"
+            android:layout_marginRight="5dp"
+            android:textSize="18sp" />
+        <TextView
+            android:id="@+id/examTimingTextView"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="00:00:00"
+            android:textSize="18sp" />
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="375dp"
+        android:orientation="horizontal" >
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="9"
+            android:layout_marginRight="10dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:text="计分信息"/>
+
+            <TextView
+                android:id="@+id/calculateScoreInfoTextView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/border"
+                android:text="..." />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="8"
+            android:orientation="vertical">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:text="考试项"/>
+
+            <ListView
+                android:id="@+id/examItemListView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/border" />
+        </LinearLayout>
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/settingExamCarButton"
+            android:layout_width="wrap_content"
+            android:layout_height="35dp"
+            android:text="配置考试车辆"/>
+
+        <Button
+            android:id="@+id/startExamButton"
+            android:layout_width="wrap_content"
+            android:layout_height="35dp"
+            android:text="开始考试"/>
+
+        <Button
+            android:id="@+id/stopExamButton"
+            android:layout_width="wrap_content"
+            android:layout_height="35dp"
+            android:text="结束考试"/>
+    </LinearLayout>
+</LinearLayout>

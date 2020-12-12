@@ -97,6 +97,12 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="exam_state"/>
+                    <Button
+                        android:id="@+id/startExamButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:visibility="invisible"
+                        android:text="开始考试"/>
                 </LinearLayout>
                 <LinearLayout
                     android:id="@+id/lightExam_linerLayout"

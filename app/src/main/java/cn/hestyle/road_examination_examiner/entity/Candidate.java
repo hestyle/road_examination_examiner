@@ -1,6 +1,8 @@
 package cn.hestyle.road_examination_examiner.entity;
 
-public class Candidate {
+import java.io.Serializable;
+
+public class Candidate implements Serializable {
     /**id*/
     private String id;
     /**驾校*/

@@ -1,10 +1,12 @@
 package cn.hestyle.road_examination_examiner.entity;
 
+import java.io.Serializable;
+
 /**
  * 考试项entity
  * @author hestyle
  */
-public class ExamItem {
+public class ExamItem implements Serializable {
     /**id 主键、自动增长*/
     private Integer id;
     /**操作项名称*/

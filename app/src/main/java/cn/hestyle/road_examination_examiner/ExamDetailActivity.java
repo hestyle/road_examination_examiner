@@ -5,6 +5,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -17,7 +19,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.util.List;
 
 import cn.hestyle.road_examination_examiner.entity.Candidate;
 import cn.hestyle.road_examination_examiner.entity.Exam;
@@ -53,6 +54,8 @@ public class ExamDetailActivity extends AppCompatActivity {
     private TextView lightExamTextView;
     private TextView roadExamTextView;
 
+    private Button startExamButton;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,6 +65,7 @@ public class ExamDetailActivity extends AppCompatActivity {
         exam_carIdTextView = findViewById(R.id.exam_carIdTextView);
         exam_stateTextView = findViewById(R.id.exam_stateTextView);
         exam_timeTextView = findViewById(R.id.exam_timeTextView);
+        startExamButton = findViewById(R.id.startExamButton);
 
         candidatePhotoImageView = findViewById(R.id.candidatePhotoImageView);
         candidateNameTextView = findViewById(R.id.candidateNameTextView);
@@ -75,7 +79,21 @@ public class ExamDetailActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         exam = (Exam) intent.getSerializableExtra("exam");
-        Toast.makeText(ExamDetailActivity.this, exam.toString(), Toast.LENGTH_SHORT).show();
+
+        // 考试按钮默认隐藏，只有未考的考试才显示
+        startExamButton.setVisibility(View.GONE);
+        startExamButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // 跳转到考试页面
+                Intent examingIntent = new Intent(ExamDetailActivity.this, ExamingActivity.class);
+                examingIntent.putExtra("exam", exam);
+                examingIntent.putExtra("candidate", candidate);
+                examingIntent.putExtra("lightExamTemplate", lightExamTemplate);
+                examingIntent.putExtra("roadExamTemplate", roadExamTemplate);
+                startActivity(examingIntent);
+            }
+        });
     }
 
     @Override
@@ -91,9 +109,11 @@ public class ExamDetailActivity extends AppCompatActivity {
         if (exam.getState() == 0) {
             exam_stateTextView.setText("未考试");
             exam_stateTextView.setTextColor(Color.RED);
+            startExamButton.setVisibility(View.VISIBLE);
         } else {
             exam_stateTextView.setText("已考试");
             exam_stateTextView.setTextColor(Color.BLACK);
+            startExamButton.setVisibility(View.GONE);
         }
 
         // 根据candidateId查找candidate
