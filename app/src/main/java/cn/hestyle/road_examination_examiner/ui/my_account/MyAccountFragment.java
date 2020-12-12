@@ -1,4 +1,4 @@
-package cn.hestyle.road_examination_examiner.ui.gallery;
+package cn.hestyle.road_examination_examiner.ui.my_account;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -14,17 +14,17 @@ import androidx.lifecycle.ViewModelProviders;
 
 import cn.hestyle.road_examination_examiner.R;
 
-public class GalleryFragment extends Fragment {
+public class MyAccountFragment extends Fragment {
 
-    private GalleryViewModel galleryViewModel;
+    private MyAccountViewModel myAccountViewModel;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        galleryViewModel =
-                ViewModelProviders.of(this).get(GalleryViewModel.class);
-        View root = inflater.inflate(R.layout.fragment_gallery, container, false);
-        final TextView textView = root.findViewById(R.id.text_gallery);
-        galleryViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
+        myAccountViewModel =
+                ViewModelProviders.of(this).get(MyAccountViewModel.class);
+        View root = inflater.inflate(R.layout.fragment_my_account, container, false);
+        final TextView textView = root.findViewById(R.id.text_my_account);
+        myAccountViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
                 textView.setText(s);

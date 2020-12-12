@@ -12,10 +12,10 @@
         tools:layout="@layout/fragment_my_invigilation" />
 
     <fragment
-        android:id="@+id/nav_gallery"
-        android:name="cn.hestyle.road_examination_examiner.ui.gallery.GalleryFragment"
-        android:label="@string/menu_gallery"
-        tools:layout="@layout/fragment_gallery" />
+        android:id="@+id/nav_my_account"
+        android:name="cn.hestyle.road_examination_examiner.ui.my_account.MyAccountFragment"
+        android:label="@string/menu_my_account"
+        tools:layout="@layout/fragment_my_account" />
 
     <fragment
         android:id="@+id/nav_slideshow"
