@@ -80,7 +80,7 @@ public class LoginActivity extends AppCompatActivity {
                         Type type =  new TypeToken<ResponseResult<Examiner>>(){}.getType();
                         final ResponseResult<Examiner> responseResult = gson.fromJson(responseString, type);
                         // 判断是否登录成功
-                        if (responseResult.getCode() != 200) {
+                        if (responseResult.getCode() == null || responseResult.getCode() != 200) {
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
