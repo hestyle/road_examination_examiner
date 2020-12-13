@@ -4,16 +4,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.view.View;
 import android.view.Menu;
+import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
 
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
+import androidx.annotation.Nullable;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -25,6 +23,8 @@ import androidx.appcompat.widget.Toolbar;
 import cn.hestyle.road_examination_examiner.ui.setting.SettingFragment;
 
 public class MainActivity extends AppCompatActivity {
+    /** 退出登录button */
+    private Button logoutButton = null;
 
     private AppBarConfiguration mAppBarConfiguration;
 
@@ -46,6 +46,18 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
 
+        logoutButton = findViewById(R.id.logoutButton);
+        logoutButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // 清除session id，重新登录
+                LoginActivity.jSessionIdString = null;
+                LoginActivity.examiner = null;
+                Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                startActivityForResult(intent, 1);
+            }
+        });
+
         // 判断是否设置了服务器ip、tcp服务端口
         SharedPreferences sharedPreferences = getSharedPreferences("Settings", Context.MODE_PRIVATE);
         SettingFragment.serverIpAddressString = sharedPreferences.getString("serverIpAddress", null);
@@ -54,6 +66,10 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(MainActivity.this, "请先设置服务器ip地址！", Toast.LENGTH_SHORT).show();
             // 跳转到setting界面
             navController.navigate(R.id.nav_setting);
+        } else if (LoginActivity.jSessionIdString == null) {
+            // 判断是否登录了
+            Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+            startActivityForResult(intent, 1);
         }
     }
 
@@ -70,5 +86,14 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         return NavigationUI.navigateUp(navController, mAppBarConfiguration)
                 || super.onSupportNavigateUp();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1 && resultCode == 2) {
+            // 处理登录返回
+            Toast.makeText(MainActivity.this, LoginActivity.examiner.toString(), Toast.LENGTH_SHORT).show();
+        }
     }
 }
