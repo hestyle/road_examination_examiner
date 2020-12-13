@@ -83,6 +83,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        // 判断是否登录了
+        if (LoginActivity.jSessionIdString == null) {
+            this.logoutButton.setText("去登录");
+        }
+    }
+
+    @Override
     public boolean onSupportNavigateUp() {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         return NavigationUI.navigateUp(navController, mAppBarConfiguration)
@@ -94,6 +103,7 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 1 && resultCode == 2) {
             // 处理登录返回
+            this.logoutButton.setText("退出登录");
             Toast.makeText(MainActivity.this, LoginActivity.examiner.toString(), Toast.LENGTH_SHORT).show();
         }
     }
