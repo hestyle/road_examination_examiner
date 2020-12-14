@@ -1,8 +1,9 @@
 package cn.hestyle.road_examination_examiner.entity;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class ExamTemplate {
+public class ExamTemplate implements Serializable {
     /** 考试模板id */
     String id;
     /** 考试模板名称 夜考 道路考试 */
