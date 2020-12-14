@@ -7,8 +7,11 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.google.android.material.navigation.NavigationView;
 
 import androidx.annotation.Nullable;
@@ -20,6 +23,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import cn.hestyle.road_examination_examiner.entity.Examiner;
 import cn.hestyle.road_examination_examiner.ui.setting.SettingFragment;
 
 public class MainActivity extends AppCompatActivity {
@@ -27,6 +31,10 @@ public class MainActivity extends AppCompatActivity {
     private Button logoutButton = null;
 
     private AppBarConfiguration mAppBarConfiguration;
+
+    private ImageView ivMain;
+    private TextView tvId;
+    private TextView tvName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +53,10 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
+        View view = navigationView.getHeaderView(0);
+        ivMain = view.findViewById(R.id.iv_main);
+        tvId = view.findViewById(R.id.tv_id_main);
+        tvName = view.findViewById(R.id.tv_name_main);
 
         logoutButton = findViewById(R.id.logoutButton);
         logoutButton.setOnClickListener(new View.OnClickListener() {
@@ -88,6 +100,13 @@ public class MainActivity extends AppCompatActivity {
         // 判断是否登录了
         if (LoginActivity.jSessionIdString == null) {
             this.logoutButton.setText("去登录");
+        } else {
+            if (LoginActivity.examiner.getPhotoPath() != null) {
+                Glide.with(this).load("http://" + SettingFragment.serverIpAddressString + ":" + SettingFragment.serverPortString + LoginActivity.examiner.getPhotoPath()).into(ivMain);
+            }
+            tvName.setText(LoginActivity.examiner.getName());
+            tvId.setText(LoginActivity.examiner.getId());
+
         }
     }
 
