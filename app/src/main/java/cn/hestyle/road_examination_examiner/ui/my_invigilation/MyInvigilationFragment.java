@@ -24,7 +24,11 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 import cn.hestyle.road_examination_examiner.ExamDetailActivity;
@@ -86,6 +90,97 @@ public class MyInvigilationFragment extends Fragment {
             }
         });
 
+        allExamRadioButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                inListData.clear();
+                inListData.addAll(allExam);
+                examAdapter.notifyDataSetChanged();
+            }
+        });
+
+        noExamRadioButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                inListData.clear();
+                if (allExam != null && allExam.size() != 0) {
+                    // 筛选未考试的
+                    for (Exam exam : allExam) {
+                        if (exam.getState() == null || exam.getState() != 2) {
+                            inListData.add(exam);
+                        }
+                    }
+                }
+                defaultSortRadioButton.setChecked(true);
+                examAdapter.notifyDataSetChanged();
+            }
+        });
+
+        examedRadioButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                inListData.clear();
+                if (allExam != null && allExam.size() != 0) {
+                    // 筛选已考试的
+                    for (Exam exam : allExam) {
+                        if (exam.getState() != null && exam.getState() == 2) {
+                            inListData.add(exam);
+                        }
+                    }
+                }
+                defaultSortRadioButton.setChecked(true);
+                examAdapter.notifyDataSetChanged();
+            }
+        });
+
+        todayExamRadioButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                inListData.clear();
+                if (allExam != null && allExam.size() != 0) {
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                    String todayPrefix = dateFormat.format(new Date());
+                    // 筛选今天的
+                    for (Exam exam : allExam) {
+                        if (exam.getExamTime() != null && exam.getExamTime().startsWith(todayPrefix)) {
+                            inListData.add(exam);
+                        }
+                    }
+                }
+                defaultSortRadioButton.setChecked(true);
+                examAdapter.notifyDataSetChanged();
+            }
+        });
+
+        dateDescSortRadioButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (inListData != null && inListData.size() != 0) {
+                    Collections.sort(inListData, new Comparator<Exam>() {
+                        @Override
+                        public int compare(Exam o1, Exam o2) {
+                            return o2.getExamTime().compareTo(o1.getExamTime());
+                        }
+                    });
+                    examAdapter.notifyDataSetChanged();
+                }
+            }
+        });
+
+        dateAscSortRadioButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (inListData != null && inListData.size() != 0) {
+                    Collections.sort(inListData, new Comparator<Exam>() {
+                        @Override
+                        public int compare(Exam o1, Exam o2) {
+                            return o1.getExamTime().compareTo(o2.getExamTime());
+                        }
+                    });
+                    examAdapter.notifyDataSetChanged();
+                }
+            }
+        });
         return root;
     }
 
@@ -188,7 +283,7 @@ public class MyInvigilationFragment extends Fragment {
                 viewHolder.exam_stateTextView.setTextColor(Color.RED);
             } else if (exam.getState() == 2) {
                 viewHolder.exam_stateTextView.setText("已考试");
-                viewHolder.exam_stateTextView.setTextColor(Color.GREEN);
+                viewHolder.exam_stateTextView.setTextColor(Color.BLACK);
             }
             viewHolder.exam_candidateIdTextView.setText(exam.getCandidateId());
             viewHolder.exam_examTimeTextView.setText(exam.getExamTime());

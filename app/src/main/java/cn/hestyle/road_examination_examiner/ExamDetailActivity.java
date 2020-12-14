@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -43,6 +44,11 @@ public class ExamDetailActivity extends AppCompatActivity {
     private TextView exam_carIdTextView;
     private TextView exam_stateTextView;
     private TextView exam_timeTextView;
+    private LinearLayout examResultLinearLayout;
+    private TextView exam_completedTimeTextView;
+    private TextView exam_scoredTextView;
+    private TextView exam_isPassTextView;
+    private TextView exam_scoreLossDescTextView;
 
     private ImageView candidatePhotoImageView;
     private TextView candidateNameTextView;
@@ -66,6 +72,12 @@ public class ExamDetailActivity extends AppCompatActivity {
         exam_stateTextView = findViewById(R.id.exam_stateTextView);
         exam_timeTextView = findViewById(R.id.exam_timeTextView);
         startExamButton = findViewById(R.id.startExamButton);
+        examResultLinearLayout = findViewById(R.id.examResultLinearLayout);
+        examResultLinearLayout.setVisibility(View.GONE);
+        exam_completedTimeTextView = findViewById(R.id.exam_completedTimeTextView);
+        exam_scoredTextView = findViewById(R.id.exam_scoredTextView);
+        exam_isPassTextView = findViewById(R.id.exam_isPassTextView);
+        exam_scoreLossDescTextView = findViewById(R.id.exam_scoreLossDescTextView);
 
         candidatePhotoImageView = findViewById(R.id.candidatePhotoImageView);
         candidateNameTextView = findViewById(R.id.candidateNameTextView);
@@ -110,10 +122,22 @@ public class ExamDetailActivity extends AppCompatActivity {
             exam_stateTextView.setText("未考试");
             exam_stateTextView.setTextColor(Color.RED);
             startExamButton.setVisibility(View.VISIBLE);
+            examResultLinearLayout.setVisibility(View.GONE);
         } else {
             exam_stateTextView.setText("已考试");
             exam_stateTextView.setTextColor(Color.BLACK);
             startExamButton.setVisibility(View.GONE);
+            examResultLinearLayout.setVisibility(View.VISIBLE);
+            exam_completedTimeTextView.setText(exam.getCompletedTime() + "");
+            exam_scoredTextView.setText(exam.getScored() + "");
+            if (exam.getIsPass() == null || exam.getIsPass() == 0) {
+                exam_isPassTextView.setText("未通过");
+                exam_isPassTextView.setTextColor(Color.RED);
+            } else {
+                exam_isPassTextView.setText("已通过");
+                exam_isPassTextView.setTextColor(Color.GREEN);
+            }
+            exam_scoreLossDescTextView.setText(exam.getScoreLossDesc() + "");
         }
 
         // 根据candidateId查找candidate

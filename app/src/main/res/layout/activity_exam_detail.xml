@@ -28,18 +28,19 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="考生信息："
+                android:text="考生信息"
                 android:textSize="18sp" />
             <include layout="@layout/content_candidate"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="考试信息："
+                android:text="考试信息"
                 android:textSize="18sp" />
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="@drawable/border"
                 android:orientation="vertical" >
 
                 <LinearLayout
@@ -82,7 +83,7 @@
                         android:id="@+id/exam_timeTextView"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="exam_carId"/>
+                        android:text="exam_time"/>
                 </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -100,42 +101,115 @@
                     <Button
                         android:id="@+id/startExamButton"
                         android:layout_width="wrap_content"
-                        android:layout_height="40dp"
+                        android:layout_height="35dp"
                         android:visibility="invisible"
                         android:text="开始考试"/>
                 </LinearLayout>
                 <LinearLayout
-                    android:id="@+id/lightExam_linerLayout"
+                    android:id="@+id/examResultLinearLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:layout_marginTop="10dp">
+                    android:layout_marginVertical="10dp"
+                    android:orientation="vertical" >
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:text="灯光考试项："/>
+                        android:text="考试结果"
+                        android:textSize="16sp"/>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal" >
+
+                        <TextView
+                            android:layout_width="95dp"
+                            android:layout_height="wrap_content"
+                            android:text="完成时间:"/>
+                        <TextView
+                            android:id="@+id/exam_completedTimeTextView"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="completedTime"/>
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal" >
+
+                        <TextView
+                            android:layout_width="95dp"
+                            android:layout_height="wrap_content"
+                            android:text="得分:"/>
+                        <TextView
+                            android:id="@+id/exam_scoredTextView"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="scored"/>
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal" >
+
+                        <TextView
+                            android:layout_width="95dp"
+                            android:layout_height="wrap_content"
+                            android:text="是否通过:"/>
+                        <TextView
+                            android:id="@+id/exam_isPassTextView"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="isPass"/>
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal" >
+
+                        <TextView
+                            android:layout_width="95dp"
+                            android:layout_height="wrap_content"
+                            android:text="备注:"/>
+                        <TextView
+                            android:id="@+id/exam_scoreLossDescTextView"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="scoreLossDesc"/>
+                    </LinearLayout>
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" >
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:text="灯光考试项："
+                        android:textSize="16sp" />
                     <TextView
                         android:id="@+id/lightExamTextView"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_margin="5dp"
                         android:maxLines="10"/>
                 </LinearLayout>
                 <LinearLayout
-                    android:id="@+id/roadExam_linerLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:layout_marginTop="10dp">
+                    android:orientation="vertical" >
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:text="道路考试项：" />
+                        android:text="道路考试项："
+                        android:textSize="16sp" />
                     <TextView
                         android:id="@+id/roadExamTextView"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_margin="5dp"
                         android:maxLines="10"/>
                 </LinearLayout>
             </LinearLayout>
