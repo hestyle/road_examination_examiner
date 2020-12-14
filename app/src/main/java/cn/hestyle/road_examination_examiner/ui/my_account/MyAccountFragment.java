@@ -17,10 +17,12 @@ import com.bumptech.glide.Glide;
 import cn.hestyle.road_examination_examiner.LoginActivity;
 import cn.hestyle.road_examination_examiner.R;
 import cn.hestyle.road_examination_examiner.entity.Examiner;
+import cn.hestyle.road_examination_examiner.ui.setting.SettingFragment;
 
 public class MyAccountFragment extends Fragment {
 
     private Button btnEdit;
+    private Button btnEditPassword;
     private Button btnBack;
 
     private TextView tvIdNumber;
@@ -40,6 +42,7 @@ public class MyAccountFragment extends Fragment {
 
         View root = inflater.inflate(R.layout.fragment_my_account, container, false);
         btnEdit = root.findViewById(R.id.btn_account_edit);
+        btnEditPassword = root.findViewById(R.id.btn_edit_password);
         btnBack = root.findViewById(R.id.btn_account_back);
 
         tvIdNumber = root.findViewById(R.id.text_id_number);
@@ -53,7 +56,7 @@ public class MyAccountFragment extends Fragment {
         rbFemale = root.findViewById(R.id.rBtn_female);
         //设置数据
         if(examiner.getPhotoPath() != null) {
-            Glide.with(this).load("http://192.168.31.219:9090" + examiner.getPhotoPath()).into(ivDetail);
+            Glide.with(this).load("http://" + SettingFragment.serverIpAddressString + ":" +SettingFragment.serverPortString + examiner.getPhotoPath()).into(ivDetail);
         }
         tvIdNumber.setText(examiner.getId());
         tvName.setText(examiner.getName());
