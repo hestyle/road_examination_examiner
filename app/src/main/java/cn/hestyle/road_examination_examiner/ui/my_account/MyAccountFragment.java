@@ -4,32 +4,67 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.RadioButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProviders;
 
+import com.bumptech.glide.Glide;
+
+import cn.hestyle.road_examination_examiner.LoginActivity;
 import cn.hestyle.road_examination_examiner.R;
+import cn.hestyle.road_examination_examiner.entity.Examiner;
 
 public class MyAccountFragment extends Fragment {
 
-    private MyAccountViewModel myAccountViewModel;
+    private Button btnEdit;
+    private Button btnBack;
+
+    private TextView tvIdNumber;
+    private TextView tvName;
+    private TextView tvPhoneNumber;
+    private TextView tvAge;
+
+    private ImageView ivDetail;
+
+    private RadioButton rbMale;
+    private RadioButton rbFemale;
+
+    private Examiner examiner = LoginActivity.examiner;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        myAccountViewModel =
-                ViewModelProviders.of(this).get(MyAccountViewModel.class);
+
         View root = inflater.inflate(R.layout.fragment_my_account, container, false);
-        final TextView textView = root.findViewById(R.id.text_my_account);
-        myAccountViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
-            @Override
-            public void onChanged(@Nullable String s) {
-                textView.setText(s);
-            }
-        });
+        btnEdit = root.findViewById(R.id.btn_account_edit);
+        btnBack = root.findViewById(R.id.btn_account_back);
+
+        tvIdNumber = root.findViewById(R.id.text_id_number);
+        tvName = root.findViewById(R.id.text_name);
+        tvPhoneNumber =root.findViewById(R.id.text_phone_number);
+        tvAge = root.findViewById(R.id.text_age);
+
+        ivDetail = root.findViewById(R.id.img_detail);
+
+        rbMale = root.findViewById(R.id.rBtn_male);
+        rbFemale = root.findViewById(R.id.rBtn_female);
+        //设置数据
+        if(examiner.getPhotoPath() != null) {
+            Glide.with(this).load("http://192.168.31.219:9090" + examiner.getPhotoPath()).into(ivDetail);
+        }
+        tvIdNumber.setText(examiner.getId());
+        tvName.setText(examiner.getName());
+        tvAge.setText(examiner.getAge().toString());
+        tvPhoneNumber.setText(examiner.getPhoneNumber());
+        if(examiner.getGender().equals('男')){
+            rbMale.setChecked(true);
+        }else{
+            rbFemale.setChecked(true);
+        }
+
         return root;
     }
 }
