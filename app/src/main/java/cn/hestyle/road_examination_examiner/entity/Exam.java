@@ -1,11 +1,12 @@
 package cn.hestyle.road_examination_examiner.entity;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
  * exam 实体类
  */
-public class Exam {
+public class Exam implements Serializable {
     /** 准考证号（日期+流水号） 主键 */
     private String admissionNo;
     /** 考试车id */
