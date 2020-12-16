@@ -16,6 +16,7 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -124,6 +125,12 @@ public class ExamingActivity extends AppCompatActivity {
         roadExamItemAdapter = new ExamItemAdapter();
         examItemListView.setAdapter(roadExamItemAdapter);
         contentScrollView = findViewById(R.id.contentScrollView);
+        examItemListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+            }
+        });
 
         settingExamCarButton = findViewById(R.id.settingExamCarButton);
         settingExamCarButton.setOnClickListener(new View.OnClickListener() {
@@ -322,7 +329,9 @@ public class ExamingActivity extends AppCompatActivity {
                 Toast.makeText(context,examUpdateUiBroadcastMessage.getMessage(), Toast.LENGTH_SHORT).show();
             } else if (ExamUpdateUiBroadcastMessage.EXAM_STOPPED_BY_EXCEPTION.equals(examUpdateUiBroadcastMessage.getTypeName())) {
                 // 结束计时器
-                calExamTimerTask.cancel();
+                if (calExamTimerTask != null) {
+                    calExamTimerTask.cancel();
+                }
                 // 考试车辆tcp连接中断
                 AlertDialog alertDialog = new AlertDialog.Builder(ExamingActivity.examingActivity)
                         .setTitle("错误信息")
