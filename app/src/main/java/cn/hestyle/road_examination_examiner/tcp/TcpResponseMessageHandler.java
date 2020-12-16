@@ -103,10 +103,16 @@ public class TcpResponseMessageHandler extends Thread {
         Map<String, Object> resultDataMap = new HashMap<>();
         synchronized (TcpResponseMessageHandler.class) {
             // 如果当前灯光考试项没有进行操作，则默认沿用上一次的灯光操作
-            if (defaultResultMessage.equals(resultMessage) && examOperationList.get(0).getName().equals(beforeLightOperationName)) {
-                // 并且是上一次灯光操作是当前灯光考试项的答案
-                resultDataMap.put("isCorrect", true);
-                resultDataMap.put("resultMessage", "正确" + examOperationList.get(0).getDescription());
+            if (defaultResultMessage.equals(resultMessage) && beforeLightOperationName != null) {
+                if (examOperationList.get(0).getName().equals(beforeLightOperationName)) {
+                    // 并且是上一次灯光操作是当前灯光考试项的答案
+                    resultDataMap.put("isCorrect", true);
+                    resultDataMap.put("resultMessage", "正确" + examOperationList.get(0).getDescription());
+                } else {
+                    // 上一次灯光操作不适用与当前灯光考试项
+                    resultDataMap.put("isCorrect", false);
+                    resultDataMap.put("resultMessage", "错误" + ExamOperation.getOpMsgByOpName(beforeLightOperationName));
+                }
             } else {
                 resultDataMap.put("isCorrect", isCorrect);
                 resultDataMap.put("resultMessage", resultMessage);
