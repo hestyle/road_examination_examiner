@@ -23,20 +23,23 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="考试详情"
+                android:textColor="@android:color/black"
                 android:textSize="20sp" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="考生信息"
-                android:textSize="18sp" />
+                android:textColor="@android:color/black"
+                android:textSize="16sp" />
             <include layout="@layout/content_candidate"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="考试信息"
-                android:textSize="18sp" />
+                android:textColor="@android:color/black"
+                android:textSize="16sp" />
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -109,7 +112,7 @@
                     android:id="@+id/examResultLinearLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginVertical="10dp"
+                    android:layout_marginVertical="5dp"
                     android:orientation="vertical" >
 
                     <TextView
@@ -192,7 +195,7 @@
                         android:id="@+id/lightExamTextView"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_margin="5dp"
+                        android:layout_marginLeft="5dp"
                         android:maxLines="10"/>
                 </LinearLayout>
                 <LinearLayout
@@ -209,7 +212,7 @@
                         android:id="@+id/roadExamTextView"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_margin="5dp"
+                        android:layout_marginLeft="5dp"
                         android:maxLines="10"/>
                 </LinearLayout>
             </LinearLayout>
