@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -30,9 +31,12 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import cn.hestyle.road_examination_examiner.entity.Candidate;
 import cn.hestyle.road_examination_examiner.entity.Car;
@@ -83,6 +87,11 @@ public class ExamingActivity extends AppCompatActivity {
     /** 其它子线程发送通知的上下文 */
     public static ExamingActivity examingActivity = null;
 
+    /** 考试计时器相关 */
+    private long examStartTime = 0;
+    private TimerTask calExamTimerTask;
+    private TextView examTimingTextView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -100,6 +109,8 @@ public class ExamingActivity extends AppCompatActivity {
         candidateIdTextView = findViewById(R.id.candidateIdTextView);
         candidatePhoneNumberTextView = findViewById(R.id.candidatePhoneNumberTextView);
         candidateDriverSchoolTextView = findViewById(R.id.candidateDriverSchoolTextView);
+
+        examTimingTextView = findViewById(R.id.examTimingTextView);
 
         // 初始，默认100分
         hadScore = 100;
@@ -236,6 +247,7 @@ public class ExamingActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        examingActivity = null;
         // activity销毁时，注销广播
         unregisterReceiver(examBroadcastReceiver);
     }
@@ -306,6 +318,8 @@ public class ExamingActivity extends AppCompatActivity {
                 }
                 Toast.makeText(context,examUpdateUiBroadcastMessage.getMessage(), Toast.LENGTH_SHORT).show();
             } else if (ExamUpdateUiBroadcastMessage.EXAM_STOPPED_BY_EXCEPTION.equals(examUpdateUiBroadcastMessage.getTypeName())) {
+                // 结束计时器
+                calExamTimerTask.cancel();
                 // 考试车辆tcp连接中断
                 AlertDialog alertDialog = new AlertDialog.Builder(ExamingActivity.examingActivity)
                         .setTitle("错误信息")
@@ -346,6 +360,25 @@ public class ExamingActivity extends AppCompatActivity {
                 startExamButton.setEnabled(false);
                 stopExamButton.setEnabled(true);
                 Toast.makeText(context,examUpdateUiBroadcastMessage.getMessage(), Toast.LENGTH_SHORT).show();
+                // 获取当前时间，开启计时器
+                examStartTime = SystemClock.elapsedRealtime();
+                calExamTimerTask = new TimerTask() {
+                    @Override
+                    public void run() {
+                        int time = (int)((SystemClock.elapsedRealtime() - examStartTime) / 1000);
+                        String hh = new DecimalFormat("00").format(time / 3600);
+                        String mm = new DecimalFormat("00").format(time % 3600 / 60);
+                        String ss = new DecimalFormat("00").format(time % 60);
+                        final String timeFormat = new String(hh + ":" + mm + ":" + ss);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                examTimingTextView.setText(timeFormat);
+                            }
+                        });
+                    }
+                };
+                new Timer("考试计时器").scheduleAtFixedRate(calExamTimerTask, 0, 1000L);
             }
         }
     }
