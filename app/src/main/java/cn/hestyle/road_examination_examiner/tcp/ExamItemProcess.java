@@ -12,11 +12,14 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
+import cn.hestyle.road_examination_examiner.ExamingActivity;
 import cn.hestyle.road_examination_examiner.entity.Car;
 import cn.hestyle.road_examination_examiner.entity.ExamItem;
 import cn.hestyle.road_examination_examiner.entity.ExamOperation;
+import cn.hestyle.road_examination_examiner.entity.ExamUpdateUiBroadcastMessage;
 import cn.hestyle.road_examination_examiner.entity.ResponseResult;
 import cn.hestyle.road_examination_examiner.ui.setting.SettingFragment;
+import cn.hestyle.road_examination_examiner.util.ExamUpdateUiBroadcastUtil;
 import cn.hestyle.tcp.TcpRequestMessage;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -85,14 +88,27 @@ public class ExamItemProcess {
         TcpRequestMessage tcpRequestMessage = new TcpRequestMessage();
         tcpRequestMessage.setTypeName(TcpRequestMessage.REQUEST_TCP_CONNECT_CLOSE);
         TcpNetWorkServiceThread.addTcpRequestMessage(tcpRequestMessage);
-        // 停止tcpServiceThread、tcpResponseMessageHandler、TcpNetWorkServiceThread线程
-        ExamItemProcess.restrictStopOtherThread();
+        // 重置各个flag
+        stopExamFlagReset();
     }
 
     /**
      * 强制停止三个线程
      */
-    public static void restrictStopOtherThread() {
+    public static void immediateStopOtherThread() {
+        // 重置各个flag
+        stopExamFlagReset();
+        // 发送广播，更新ui
+        ExamUpdateUiBroadcastMessage examUpdateUiBroadcastMessage = new ExamUpdateUiBroadcastMessage();
+        examUpdateUiBroadcastMessage.setTypeName(ExamUpdateUiBroadcastMessage.EXAM_STOPPED_BY_EXCEPTION);
+        examUpdateUiBroadcastMessage.setMessage("考试终止，考试车辆TCP连接中断！！！");
+        ExamUpdateUiBroadcastUtil.sendBroadcast(ExamingActivity.examingActivity, examUpdateUiBroadcastMessage);
+    }
+
+    /**
+     * 停止考试时，重置各个flag
+     */
+    private static void stopExamFlagReset() {
         ExamItemProcess.isExamStarted = false;
         ExamItemProcess.isExaming = false;
         ExamItemProcess.isExamEnd = true;

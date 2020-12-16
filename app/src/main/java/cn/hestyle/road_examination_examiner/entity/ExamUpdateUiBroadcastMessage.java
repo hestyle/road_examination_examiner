@@ -12,6 +12,7 @@ public class ExamUpdateUiBroadcastMessage implements Serializable {
     public static final String MESSAGE_NAME = "ExamUpdateUiBroadcastMessage";
     /** 消息类型 */
     public static final String CAR_SETTING_RESULT = "CAR_SETTING_RESULT";
+    public static final String EXAM_STOPPED_BY_EXCEPTION = "EXAM_STOPPED_BY_EXCEPTION";
 
     /** 消息类型 */
     private String typeName;

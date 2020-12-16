@@ -1,9 +1,11 @@
 package cn.hestyle.road_examination_examiner;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
@@ -282,6 +284,20 @@ public class ExamingActivity extends AppCompatActivity {
                     startExamButton.setEnabled(true);
                 }
                 Toast.makeText(context,examUpdateUiBroadcastMessage.getMessage(), Toast.LENGTH_SHORT).show();
+            } else if (ExamUpdateUiBroadcastMessage.EXAM_STOPPED_BY_EXCEPTION.equals(examUpdateUiBroadcastMessage.getTypeName())) {
+                // 考试车辆tcp连接中断
+                AlertDialog alertDialog = new AlertDialog.Builder(ExamingActivity.this)
+                        .setTitle("错误信息")
+                        .setMessage(examUpdateUiBroadcastMessage.getMessage())
+                        .setCancelable(false)
+                        .setPositiveButton("退出考试", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                ExamingActivity.this.finish();
+                            }
+                        })
+                        .create();
+                alertDialog.show();
             }
         }
     }

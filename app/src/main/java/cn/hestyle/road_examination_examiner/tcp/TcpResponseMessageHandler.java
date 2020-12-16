@@ -63,7 +63,7 @@ public class TcpResponseMessageHandler extends Thread {
             if (ExamItemProcess.isExamStarted) {
                 Log.i("TcpResponseHandler", "TcpResponseMessageHandler线程【非正常】停止！");
                 // 非正常情况下停止
-                ExamItemProcess.restrictStopOtherThread();
+                ExamItemProcess.immediateStopOtherThread();
             }
             tcpResponseMessageHandler = null;
             Log.i("TcpResponseHandler", "TcpResponseMessageHandler线程已停止！");
