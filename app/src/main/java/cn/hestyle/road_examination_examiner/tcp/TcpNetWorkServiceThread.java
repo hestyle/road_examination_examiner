@@ -75,6 +75,9 @@ public class TcpNetWorkServiceThread extends Thread {
                 }
                 sleep(80);
             }
+            if (!socket.isClosed()) {
+                socket.close();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -82,10 +85,6 @@ public class TcpNetWorkServiceThread extends Thread {
                 Log.e("TcpServiceThread", "Tcp服务线程【非正常】停止！");
                 // 非正常退出，tcp线程启动失败
                 ExamItemProcess.immediateStopOtherThread();
-            }
-            if (tcpObjectReadThread != null) {
-                tcpObjectReadThread.stop();
-                tcpObjectReadThread = null;
             }
             tcpNetWorkServiceThread = null;
             Log.i("TcpServiceThread", "Tcp服务线程停止！");

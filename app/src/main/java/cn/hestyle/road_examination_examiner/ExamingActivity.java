@@ -221,6 +221,13 @@ public class ExamingActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // activity销毁时，注销通知
+        unregisterReceiver(examBroadcastReceiver);
+    }
+
+    @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if ((keyCode == KeyEvent.KEYCODE_BACK)) {
             if (ExamItemProcess.isExaming) {
@@ -286,14 +293,14 @@ public class ExamingActivity extends AppCompatActivity {
                 Toast.makeText(context,examUpdateUiBroadcastMessage.getMessage(), Toast.LENGTH_SHORT).show();
             } else if (ExamUpdateUiBroadcastMessage.EXAM_STOPPED_BY_EXCEPTION.equals(examUpdateUiBroadcastMessage.getTypeName())) {
                 // 考试车辆tcp连接中断
-                AlertDialog alertDialog = new AlertDialog.Builder(ExamingActivity.this)
+                AlertDialog alertDialog = new AlertDialog.Builder(ExamingActivity.examingActivity)
                         .setTitle("错误信息")
                         .setMessage(examUpdateUiBroadcastMessage.getMessage())
                         .setCancelable(false)
                         .setPositiveButton("退出考试", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                ExamingActivity.this.finish();
+                                ExamingActivity.examingActivity.finish();
                             }
                         })
                         .create();
