@@ -1,5 +1,6 @@
 package cn.hestyle.road_examination_examiner.tcp;
 
+import android.media.MediaPlayer;
 import android.util.Log;
 
 import com.google.gson.Gson;
@@ -9,13 +10,17 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import cn.hestyle.road_examination_examiner.ExamingActivity;
+import cn.hestyle.road_examination_examiner.LoginActivity;
 import cn.hestyle.road_examination_examiner.entity.Car;
 import cn.hestyle.road_examination_examiner.entity.ExamItem;
 import cn.hestyle.road_examination_examiner.entity.ExamOperation;
+import cn.hestyle.road_examination_examiner.entity.ExamTemplate;
 import cn.hestyle.road_examination_examiner.entity.ExamUpdateUiBroadcastMessage;
 import cn.hestyle.road_examination_examiner.entity.ResponseResult;
 import cn.hestyle.road_examination_examiner.ui.setting.SettingFragment;
@@ -37,11 +42,12 @@ public class ExamItemProcess {
 
     /** 记录考试相关的信息 */
     public static volatile Boolean isExamStarted = false;
+    /** 是否正在灯光考试 */
+    public static volatile Boolean isLightExaming = false;
     public static volatile Boolean isExaming = false;
     public static volatile Boolean isExamEnd = false;
     /** 正在考试的考试项，以及该考试项包括的操作项list */
     public static volatile ExamItem examingExamItem = null;
-    public static volatile List<ExamOperation> examOperationList = new ArrayList<>();
 
     public static volatile Car car = null;
 
@@ -76,8 +82,12 @@ public class ExamItemProcess {
         tcpNetWorkServiceThread.start();
     }
 
-    public static void startExam() {
+    public static void startExam(ExamTemplate lightExamTemplate) {
         isExaming = true;
+        isLightExaming = true;
+        // 启动灯光考试音频播放线程
+        LightExamThread lightExamThread = new LightExamThread(lightExamTemplate);
+        lightExamThread.start();
     }
 
     /**
@@ -110,6 +120,7 @@ public class ExamItemProcess {
      */
     private static void stopExamFlagReset() {
         ExamItemProcess.isExamStarted = false;
+        ExamItemProcess.isLightExaming = false;
         ExamItemProcess.isExaming = false;
         ExamItemProcess.isExamEnd = true;
         // 丢弃examItemProcess对象
@@ -150,6 +161,7 @@ public class ExamItemProcess {
                 .build();
         Request request = new Request.Builder()
                 .url("http://" + SettingFragment.serverIpAddressString + ":" + SettingFragment.serverPortString + "/road_examination_manager/examOperation/findByIdsString.do")
+                .addHeader("Cookie", "JSESSIONID=" + LoginActivity.jSessionIdString)
                 .post(formBody)
                 .build();
         OkHttpClient httpClient = new OkHttpClient();
@@ -171,11 +183,85 @@ public class ExamItemProcess {
                     // 操作项获取失败
                     Log.e("ExamOperation", "考试项 id = " + examingExamItem.getId() + "操作项请求失败！");
                 } else {
-                    examOperationList.clear();
-                    examOperationList.addAll(responseResult.getData());
+                    TcpResponseMessageHandler.examOperationList.clear();
+                    TcpResponseMessageHandler.examOperationList.addAll(responseResult.getData());
                     Log.i("ExamOperation", "考试项 id = " + examingExamItem.getId() + "操作项请求成功！");
                 }
             }
         });
+    }
+
+    /**
+     * 夜间灯光考试线程
+     */
+    static class LightExamThread extends Thread {
+        /** 夜间灯光模拟考试模板 */
+        private ExamTemplate lightExamTemplate;
+
+        public LightExamThread(ExamTemplate lightExamTemplate) {
+            this.lightExamTemplate = lightExamTemplate;
+        }
+
+        @Override
+        public void run() {
+            super.run();
+            Log.i("LightExamThread", "灯光模拟考试线程已启动！");
+            // 遍历灯光考试模板中的考试项
+            Iterator<ExamItem> iterator = lightExamTemplate.getExamItemList().iterator();
+            try {
+                MediaPlayer mediaPlayer = new MediaPlayer();
+                mediaPlayer.reset();
+                // 播放“科目三道路考试”
+                mediaPlayer.setDataSource("http://" + SettingFragment.serverIpAddressString + ":" + SettingFragment.serverPortString + "/road_examination_manager/upload/audio/160809159797428104571.mp3");
+                mediaPlayer.prepare();
+                mediaPlayer.start();
+                while (mediaPlayer.isPlaying()) {
+                    sleep(300);
+                }
+                // 播放完后，等待三秒，再播放灯光考试项
+                sleep(3000);
+                while (isLightExaming && iterator.hasNext()) {
+                    ExamItem examItem = iterator.next();
+                    mediaPlayer.reset();
+                    mediaPlayer.setDataSource("http://" + SettingFragment.serverIpAddressString + ":" + SettingFragment.serverPortString + examItem.getVoicePath());
+                    mediaPlayer.prepare();
+                    mediaPlayer.start();
+                    // 音频播放期间，请求该考试项包含的操作项
+                    examingExamItem = examItem;
+                    getExamOperationByExamOperationIdsString(examItem.getOperationIds());
+                    while (mediaPlayer.isPlaying()) {
+                        sleep(300);
+                    }
+                    Log.i("LightExamThread", examItem.getVoicePath() + "已播放完毕");
+                    // 给ui发送已开始新examItem的广播
+                    ExamUpdateUiBroadcastMessage examItemStartMessage = new ExamUpdateUiBroadcastMessage();
+                    examItemStartMessage.setTypeName(ExamUpdateUiBroadcastMessage.EXAM_ITEM_START);
+                    Map<String, Object> dataMap = new HashMap<>();
+                    dataMap.put("examItem", examItem);
+                    examItemStartMessage.setData(dataMap);
+                    ExamUpdateUiBroadcastUtil.sendBroadcast(ExamingActivity.examingActivity, examItemStartMessage);
+                    sleep(5000);
+                    // 查看结果，并且将结果发送到ui线程
+                    ExamUpdateUiBroadcastMessage examItemResultMessage = new ExamUpdateUiBroadcastMessage();
+                    examItemResultMessage.setTypeName(ExamUpdateUiBroadcastMessage.EXAM_ITEM_OPERATE_RESULT);
+                    examItemResultMessage.setData(TcpResponseMessageHandler.getExamItemResultMap());
+                    ExamUpdateUiBroadcastUtil.sendBroadcast(ExamingActivity.examingActivity, examItemResultMessage);
+                }
+                // 播放“灯光考试结束”
+                mediaPlayer.reset();
+                // 播放“科目三道路考试”
+                mediaPlayer.setDataSource("http://" + SettingFragment.serverIpAddressString + ":" + SettingFragment.serverPortString + "/road_examination_manager/upload/audio/160809164492438619086.mp3");
+                mediaPlayer.prepare();
+                mediaPlayer.start();
+                while (mediaPlayer.isPlaying()) {
+                    sleep(300);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                ExamItemProcess.isLightExaming = false;
+                Log.i("LightExamThread", "灯光模拟考试线程已停止！");
+            }
+        }
     }
 }

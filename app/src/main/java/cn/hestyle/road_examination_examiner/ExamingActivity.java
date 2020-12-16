@@ -8,7 +8,9 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -30,6 +32,7 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import cn.hestyle.road_examination_examiner.entity.Candidate;
 import cn.hestyle.road_examination_examiner.entity.Car;
@@ -66,6 +69,10 @@ public class ExamingActivity extends AppCompatActivity {
     private Button startExamButton;
     private Button stopExamButton;
 
+    private Integer hadScore;
+    private TextView hadScoreTextView;
+    private TextView calculateScoreInfoTextView;
+
     private ListView examItemListView;
     private ExamItemAdapter roadExamItemAdapter;
 
@@ -94,6 +101,12 @@ public class ExamingActivity extends AppCompatActivity {
         candidatePhoneNumberTextView = findViewById(R.id.candidatePhoneNumberTextView);
         candidateDriverSchoolTextView = findViewById(R.id.candidateDriverSchoolTextView);
 
+        // 初始，默认100分
+        hadScore = 100;
+        hadScoreTextView = findViewById(R.id.hadScoreTextView);
+        calculateScoreInfoTextView = findViewById(R.id.calculateScoreInfoTextView);
+        calculateScoreInfoTextView.setMovementMethod(ScrollingMovementMethod.getInstance());
+
         examItemListView = findViewById(R.id.examItemListView);
         roadExamItemAdapter = new ExamItemAdapter();
         examItemListView.setAdapter(roadExamItemAdapter);
@@ -113,7 +126,7 @@ public class ExamingActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 // 开始考试
-                ExamItemProcess.startExam();
+                ExamItemProcess.startExam(lightExamTemplate);
             }
         });
         stopExamButton = findViewById(R.id.stopExamButton);
@@ -223,7 +236,7 @@ public class ExamingActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // activity销毁时，注销通知
+        // activity销毁时，注销广播
         unregisterReceiver(examBroadcastReceiver);
     }
 
@@ -277,6 +290,7 @@ public class ExamingActivity extends AppCompatActivity {
     }
 
     class ExamBroadcastReceiver extends BroadcastReceiver {
+        private ExamItem examItem = null;
         @Override
         public void onReceive(Context context, Intent intent) {
             // 取出intent中的ExamUpdateUiBroadcastMessage对象
@@ -305,6 +319,28 @@ public class ExamingActivity extends AppCompatActivity {
                         })
                         .create();
                 alertDialog.show();
+            } else if (ExamUpdateUiBroadcastMessage.EXAM_ITEM_START.equals(examUpdateUiBroadcastMessage.getTypeName())) {
+                // 开始了一个新的examItem
+                examItem = (ExamItem) examUpdateUiBroadcastMessage.getData().get("examItem");
+                System.err.println("开始了一个新ExamItem " + examItem.toString());
+            } else if (ExamUpdateUiBroadcastMessage.EXAM_ITEM_OPERATE_RESULT.equals(examUpdateUiBroadcastMessage.getTypeName())) {
+                // examItem操作结果
+                Map<String, Object> dataMap = examUpdateUiBroadcastMessage.getData();
+                Boolean isCorrect = (Boolean) dataMap.get("isCorrect");
+                String resultMessage = (String) dataMap.get("resultMessage");
+                if (!isCorrect) {
+                    // 减分
+                    hadScore -= examItem.getScore();
+                    hadScoreTextView.setText(hadScore + "");
+                    if (hadScore < 80) {
+                        hadScoreTextView.setTextColor(Color.RED);
+                    } else {
+                        hadScoreTextView.setTextColor(Color.BLACK);
+                    }
+                    calculateScoreInfoTextView.append("考试项" + examItem.getName() + "扣 " + examItem.getScore() + " 分，因为" + resultMessage + "\n");
+                } else {
+                    calculateScoreInfoTextView.append("考试项" + examItem.getName() + "得 " + examItem.getScore() + " 分\n");
+                }
             }
         }
     }
