@@ -5,152 +5,165 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:layout_margin="10dp"
     tools:context=".ExamingActivity">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="科目三考试"
-        android:textColor="@android:color/black"
-        android:textSize="20sp" />
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="考生信息"
-        android:textColor="@android:color/black"
-        android:textSize="16sp" />
-    <include layout="@layout/content_candidate"/>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:orientation="horizontal">
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="考试计时"
-            android:gravity="right"
-            android:textColor="@android:color/black"
-            android:layout_marginRight="2dp"
-            android:textSize="18sp" />
-        <TextView
-            android:id="@+id/examTimingTextView"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="2dp"
-            android:textColor="@android:color/black"
-            android:text="00:00:00"
-            android:textSize="18sp" />
-    </LinearLayout>
 
-    <LinearLayout
+    <ScrollView
+        android:id="@+id/contentScrollView"
         android:layout_width="match_parent"
-        android:layout_height="375dp"
-        android:layout_marginTop="5dp"
-        android:orientation="horizontal" >
+        android:layout_height="match_parent"
+        android:layout_margin="5dp" >
 
         <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:layout_marginRight="2dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="16sp"
-                    android:textColor="@android:color/black"
-                    android:text="计分信息"/>
-            </LinearLayout>
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/border"
-                android:orientation="vertical">
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="right"
-                        android:text="得分:"
-                        android:textColor="@android:color/black"
-                        android:textSize="16sp" />
-                    <TextView
-                        android:id="@+id/hadScoreTextView"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:textColor="@android:color/black"
-                        android:textSize="16sp"
-                        android:text="100"/>
-                </LinearLayout>
-                <TextView
-                    android:id="@+id/calculateScoreInfoTextView"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:scrollbars="vertical"
-                    android:textIsSelectable="true"
-                    android:text="" />
-            </LinearLayout>
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:layout_marginLeft="2dp"
-            android:orientation="vertical">
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="16sp"
+                android:gravity="center"
+                android:text="科目三考试"
                 android:textColor="@android:color/black"
-                android:text="考试项"/>
-
-            <ListView
-                android:id="@+id/examItemListView"
+                android:textSize="20sp" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="考生信息"
+                android:textColor="@android:color/black"
+                android:textSize="16sp" />
+            <include layout="@layout/content_candidate"/>
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/border"
-                android:divider="@null" />
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:orientation="horizontal">
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="考试计时"
+                    android:gravity="right"
+                    android:textColor="@android:color/black"
+                    android:layout_marginRight="2dp"
+                    android:textSize="18sp" />
+                <TextView
+                    android:id="@+id/examTimingTextView"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="2dp"
+                    android:textColor="@android:color/black"
+                    android:text="00:00:00"
+                    android:textSize="18sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="375dp"
+                android:layout_marginTop="5dp"
+                android:orientation="horizontal" >
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginRight="2dp"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="16sp"
+                            android:textColor="@android:color/black"
+                            android:text="计分信息"/>
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/border"
+                        android:orientation="vertical">
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:gravity="right"
+                                android:text="得分:"
+                                android:textColor="@android:color/black"
+                                android:textSize="16sp" />
+                            <TextView
+                                android:id="@+id/hadScoreTextView"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:textColor="@android:color/black"
+                                android:textSize="16sp"
+                                android:text="100"/>
+                        </LinearLayout>
+                        <TextView
+                            android:id="@+id/calculateScoreInfoTextView"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:scrollbars="vertical"
+                            android:textIsSelectable="true"
+                            android:text="" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginLeft="2dp"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="16sp"
+                        android:textColor="@android:color/black"
+                        android:text="考试项"/>
+
+                    <ListView
+                        android:id="@+id/examItemListView"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/border"
+                        android:divider="@null" />
+                </LinearLayout>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/settingExamCarButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:text="配置考试车辆"/>
+
+                <Button
+                    android:id="@+id/startExamButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:text="开始考试"/>
+
+                <Button
+                    android:id="@+id/stopExamButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:text="结束考试"/>
+            </LinearLayout>
         </LinearLayout>
-    </LinearLayout>
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/settingExamCarButton"
-            android:layout_width="wrap_content"
-            android:layout_height="35dp"
-            android:text="配置考试车辆"/>
-
-        <Button
-            android:id="@+id/startExamButton"
-            android:layout_width="wrap_content"
-            android:layout_height="35dp"
-            android:text="开始考试"/>
-
-        <Button
-            android:id="@+id/stopExamButton"
-            android:layout_width="wrap_content"
-            android:layout_height="35dp"
-            android:text="结束考试"/>
-    </LinearLayout>
+    </ScrollView>
 </LinearLayout>

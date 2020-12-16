@@ -20,6 +20,7 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -77,6 +78,7 @@ public class ExamingActivity extends AppCompatActivity {
     private TextView hadScoreTextView;
     private TextView calculateScoreInfoTextView;
 
+    private ScrollView contentScrollView;
     private ListView examItemListView;
     private ExamItemAdapter roadExamItemAdapter;
 
@@ -121,6 +123,7 @@ public class ExamingActivity extends AppCompatActivity {
         examItemListView = findViewById(R.id.examItemListView);
         roadExamItemAdapter = new ExamItemAdapter();
         examItemListView.setAdapter(roadExamItemAdapter);
+        contentScrollView = findViewById(R.id.contentScrollView);
 
         settingExamCarButton = findViewById(R.id.settingExamCarButton);
         settingExamCarButton.setOnClickListener(new View.OnClickListener() {
