@@ -341,6 +341,11 @@ public class ExamingActivity extends AppCompatActivity {
                 } else {
                     calculateScoreInfoTextView.append("考试项" + examItem.getName() + "得 " + examItem.getScore() + " 分\n");
                 }
+            } else if (ExamUpdateUiBroadcastMessage.EXAM_HAS_STARTED.equals(examUpdateUiBroadcastMessage.getTypeName())) {
+                // 考试已经开始，开始考试按钮disable，停止考试enable
+                startExamButton.setEnabled(false);
+                stopExamButton.setEnabled(true);
+                Toast.makeText(context,examUpdateUiBroadcastMessage.getMessage(), Toast.LENGTH_SHORT).show();
             }
         }
     }

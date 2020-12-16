@@ -88,6 +88,11 @@ public class ExamItemProcess {
         // 启动灯光考试音频播放线程
         LightExamThread lightExamThread = new LightExamThread(lightExamTemplate);
         lightExamThread.start();
+        // 发送广播，更新ui,已开始考试
+        ExamUpdateUiBroadcastMessage examUpdateUiBroadcastMessage = new ExamUpdateUiBroadcastMessage();
+        examUpdateUiBroadcastMessage.setTypeName(ExamUpdateUiBroadcastMessage.EXAM_HAS_STARTED);
+        examUpdateUiBroadcastMessage.setMessage("考试已经开始！");
+        ExamUpdateUiBroadcastUtil.sendBroadcast(ExamingActivity.examingActivity, examUpdateUiBroadcastMessage);
     }
 
     /**
@@ -105,13 +110,13 @@ public class ExamItemProcess {
     /**
      * 强制停止三个线程
      */
-    public static void immediateStopOtherThread() {
+    public static void immediateStopOtherThread(String message) {
         // 重置各个flag
         stopExamFlagReset();
         // 发送广播，更新ui
         ExamUpdateUiBroadcastMessage examUpdateUiBroadcastMessage = new ExamUpdateUiBroadcastMessage();
         examUpdateUiBroadcastMessage.setTypeName(ExamUpdateUiBroadcastMessage.EXAM_STOPPED_BY_EXCEPTION);
-        examUpdateUiBroadcastMessage.setMessage("考试终止，考试车辆TCP连接中断！！！");
+        examUpdateUiBroadcastMessage.setMessage(message);
         ExamUpdateUiBroadcastUtil.sendBroadcast(ExamingActivity.examingActivity, examUpdateUiBroadcastMessage);
     }
 
@@ -230,6 +235,9 @@ public class ExamItemProcess {
                     examingExamItem = examItem;
                     getExamOperationByExamOperationIdsString(examItem.getOperationIds());
                     while (mediaPlayer.isPlaying()) {
+                        if (!isLightExaming) {
+                            throw new Exception("已退出灯光考试！");
+                        }
                         sleep(300);
                     }
                     Log.i("LightExamThread", examItem.getVoicePath() + "已播放完毕");
@@ -240,12 +248,23 @@ public class ExamItemProcess {
                     dataMap.put("examItem", examItem);
                     examItemStartMessage.setData(dataMap);
                     ExamUpdateUiBroadcastUtil.sendBroadcast(ExamingActivity.examingActivity, examItemStartMessage);
-                    sleep(5000);
+                    // 每个灯光考试项等待5秒
+                    int count = 10;
+                    while (count > 0) {
+                        if (!isLightExaming) {
+                            throw new Exception("已退出灯光考试！");
+                        }
+                        sleep(500);
+                        count -= 1;
+                    }
                     // 查看结果，并且将结果发送到ui线程
                     ExamUpdateUiBroadcastMessage examItemResultMessage = new ExamUpdateUiBroadcastMessage();
                     examItemResultMessage.setTypeName(ExamUpdateUiBroadcastMessage.EXAM_ITEM_OPERATE_RESULT);
                     examItemResultMessage.setData(TcpResponseMessageHandler.getExamItemResultMap());
                     ExamUpdateUiBroadcastUtil.sendBroadcast(ExamingActivity.examingActivity, examItemResultMessage);
+                }
+                if (!isLightExaming) {
+                    throw new Exception("已退出灯光考试！");
                 }
                 // 播放“灯光考试结束”
                 mediaPlayer.reset();
@@ -254,13 +273,21 @@ public class ExamItemProcess {
                 mediaPlayer.prepare();
                 mediaPlayer.start();
                 while (mediaPlayer.isPlaying()) {
+                    if (!isLightExaming) {
+                        throw new Exception("已退出灯光考试！");
+                    }
                     sleep(300);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
+                if (isLightExaming && iterator.hasNext()) {
+                    Log.e("LightExamThread", "灯光考试LightExamThread线程【非正常】停止！");
+                    // 如果还在isLightExaming状态下，并且还有灯光考试项没处理，则说明上面出错了
+                    ExamItemProcess.immediateStopOtherThread("考试终止，灯光考试LightExamThread线程异常停止！");
+                }
                 ExamItemProcess.isLightExaming = false;
-                Log.i("LightExamThread", "灯光模拟考试线程已停止！");
+                Log.i("LightExamThread", "灯光模拟考试LightExamThread线程已停止！");
             }
         }
     }
