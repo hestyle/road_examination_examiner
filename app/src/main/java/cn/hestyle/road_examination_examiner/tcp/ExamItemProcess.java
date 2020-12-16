@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -211,6 +212,10 @@ public class ExamItemProcess {
         public void run() {
             super.run();
             Log.i("LightExamThread", "灯光模拟考试线程已启动！");
+            // 灯光考试项先进行随机排序
+            Collections.shuffle(lightExamTemplate.getExamItemList());
+            Collections.shuffle(lightExamTemplate.getExamItemList());
+            Collections.shuffle(lightExamTemplate.getExamItemList());
             // 遍历灯光考试模板中的考试项
             Iterator<ExamItem> iterator = lightExamTemplate.getExamItemList().iterator();
             try {
