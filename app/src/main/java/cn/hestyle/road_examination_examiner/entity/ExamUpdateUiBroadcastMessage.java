@@ -10,9 +10,16 @@ import java.util.Map;
 public class ExamUpdateUiBroadcastMessage implements Serializable {
     /** extra name */
     public static final String MESSAGE_NAME = "ExamUpdateUiBroadcastMessage";
-    /** 消息类型 */
+    /** 消息类型（car配置结果） */
     public static final String CAR_SETTING_RESULT = "CAR_SETTING_RESULT";
+    /** 考试被exception终止 */
     public static final String EXAM_STOPPED_BY_EXCEPTION = "EXAM_STOPPED_BY_EXCEPTION";
+    /** 考试项开始 */
+    public static final String EXAM_ITEM_START = "EXAM_ITEM_START";
+    /** 考试项操作结果 */
+    public static final String EXAM_ITEM_OPERATE_RESULT = "EXAM_ITEM_RESULT";
+    /** 考试已开始 */
+    public static final String EXAM_HAS_STARTED = "EXAM_HAS_STARTED";
 
     /** 消息类型 */
     private String typeName;

@@ -8,7 +8,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.os.SystemClock;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -28,8 +31,12 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import cn.hestyle.road_examination_examiner.entity.Candidate;
 import cn.hestyle.road_examination_examiner.entity.Car;
@@ -66,6 +73,10 @@ public class ExamingActivity extends AppCompatActivity {
     private Button startExamButton;
     private Button stopExamButton;
 
+    private Integer hadScore;
+    private TextView hadScoreTextView;
+    private TextView calculateScoreInfoTextView;
+
     private ListView examItemListView;
     private ExamItemAdapter roadExamItemAdapter;
 
@@ -75,6 +86,11 @@ public class ExamingActivity extends AppCompatActivity {
     private ExamBroadcastReceiver examBroadcastReceiver = null;
     /** 其它子线程发送通知的上下文 */
     public static ExamingActivity examingActivity = null;
+
+    /** 考试计时器相关 */
+    private long examStartTime = 0;
+    private TimerTask calExamTimerTask;
+    private TextView examTimingTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,6 +109,14 @@ public class ExamingActivity extends AppCompatActivity {
         candidateIdTextView = findViewById(R.id.candidateIdTextView);
         candidatePhoneNumberTextView = findViewById(R.id.candidatePhoneNumberTextView);
         candidateDriverSchoolTextView = findViewById(R.id.candidateDriverSchoolTextView);
+
+        examTimingTextView = findViewById(R.id.examTimingTextView);
+
+        // 初始，默认100分
+        hadScore = 100;
+        hadScoreTextView = findViewById(R.id.hadScoreTextView);
+        calculateScoreInfoTextView = findViewById(R.id.calculateScoreInfoTextView);
+        calculateScoreInfoTextView.setMovementMethod(ScrollingMovementMethod.getInstance());
 
         examItemListView = findViewById(R.id.examItemListView);
         roadExamItemAdapter = new ExamItemAdapter();
@@ -113,7 +137,7 @@ public class ExamingActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 // 开始考试
-                ExamItemProcess.startExam();
+                ExamItemProcess.startExam(lightExamTemplate);
             }
         });
         stopExamButton = findViewById(R.id.stopExamButton);
@@ -223,7 +247,8 @@ public class ExamingActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // activity销毁时，注销通知
+        examingActivity = null;
+        // activity销毁时，注销广播
         unregisterReceiver(examBroadcastReceiver);
     }
 
@@ -277,6 +302,7 @@ public class ExamingActivity extends AppCompatActivity {
     }
 
     class ExamBroadcastReceiver extends BroadcastReceiver {
+        private ExamItem examItem = null;
         @Override
         public void onReceive(Context context, Intent intent) {
             // 取出intent中的ExamUpdateUiBroadcastMessage对象
@@ -292,6 +318,8 @@ public class ExamingActivity extends AppCompatActivity {
                 }
                 Toast.makeText(context,examUpdateUiBroadcastMessage.getMessage(), Toast.LENGTH_SHORT).show();
             } else if (ExamUpdateUiBroadcastMessage.EXAM_STOPPED_BY_EXCEPTION.equals(examUpdateUiBroadcastMessage.getTypeName())) {
+                // 结束计时器
+                calExamTimerTask.cancel();
                 // 考试车辆tcp连接中断
                 AlertDialog alertDialog = new AlertDialog.Builder(ExamingActivity.examingActivity)
                         .setTitle("错误信息")
@@ -305,6 +333,52 @@ public class ExamingActivity extends AppCompatActivity {
                         })
                         .create();
                 alertDialog.show();
+            } else if (ExamUpdateUiBroadcastMessage.EXAM_ITEM_START.equals(examUpdateUiBroadcastMessage.getTypeName())) {
+                // 开始了一个新的examItem
+                examItem = (ExamItem) examUpdateUiBroadcastMessage.getData().get("examItem");
+                System.err.println("开始了一个新ExamItem " + examItem.toString());
+            } else if (ExamUpdateUiBroadcastMessage.EXAM_ITEM_OPERATE_RESULT.equals(examUpdateUiBroadcastMessage.getTypeName())) {
+                // examItem操作结果
+                Map<String, Object> dataMap = examUpdateUiBroadcastMessage.getData();
+                Boolean isCorrect = (Boolean) dataMap.get("isCorrect");
+                String resultMessage = (String) dataMap.get("resultMessage");
+                if (!isCorrect) {
+                    // 减分
+                    hadScore -= examItem.getScore();
+                    hadScoreTextView.setText(hadScore + "");
+                    if (hadScore < 80) {
+                        hadScoreTextView.setTextColor(Color.RED);
+                    } else {
+                        hadScoreTextView.setTextColor(Color.BLACK);
+                    }
+                    calculateScoreInfoTextView.append("考试项" + examItem.getName() + "扣 " + examItem.getScore() + " 分，因为" + resultMessage + "\n");
+                } else {
+                    calculateScoreInfoTextView.append("考试项" + examItem.getName() + "得 " + examItem.getScore() + " 分\n");
+                }
+            } else if (ExamUpdateUiBroadcastMessage.EXAM_HAS_STARTED.equals(examUpdateUiBroadcastMessage.getTypeName())) {
+                // 考试已经开始，开始考试按钮disable，停止考试enable
+                startExamButton.setEnabled(false);
+                stopExamButton.setEnabled(true);
+                Toast.makeText(context,examUpdateUiBroadcastMessage.getMessage(), Toast.LENGTH_SHORT).show();
+                // 获取当前时间，开启计时器
+                examStartTime = SystemClock.elapsedRealtime();
+                calExamTimerTask = new TimerTask() {
+                    @Override
+                    public void run() {
+                        int time = (int)((SystemClock.elapsedRealtime() - examStartTime) / 1000);
+                        String hh = new DecimalFormat("00").format(time / 3600);
+                        String mm = new DecimalFormat("00").format(time % 3600 / 60);
+                        String ss = new DecimalFormat("00").format(time % 60);
+                        final String timeFormat = new String(hh + ":" + mm + ":" + ss);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                examTimingTextView.setText(timeFormat);
+                            }
+                        });
+                    }
+                };
+                new Timer("考试计时器").scheduleAtFixedRate(calExamTimerTask, 0, 1000L);
             }
         }
     }

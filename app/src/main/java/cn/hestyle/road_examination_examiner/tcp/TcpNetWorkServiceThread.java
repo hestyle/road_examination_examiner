@@ -82,12 +82,12 @@ public class TcpNetWorkServiceThread extends Thread {
             e.printStackTrace();
         } finally {
             if (ExamItemProcess.isExamStarted) {
-                Log.e("TcpServiceThread", "Tcp服务线程【非正常】停止！");
+                Log.e("TcpServiceThread", "TcpServiceThread线程【非正常】停止！");
                 // 非正常退出，tcp线程启动失败
-                ExamItemProcess.immediateStopOtherThread();
+                ExamItemProcess.immediateStopOtherThread("考试终止，TcpServiceThread线程与车辆的Tcp连接异常中断！");
             }
             tcpNetWorkServiceThread = null;
-            Log.i("TcpServiceThread", "Tcp服务线程停止！");
+            Log.i("TcpServiceThread", "TcpServiceThread线程停止！");
         }
     }
 
@@ -114,7 +114,7 @@ public class TcpNetWorkServiceThread extends Thread {
         }
         @Override
         public void run() {
-            Log.i("TcpObjectReadThread", "Tcp服务object读取线程启动！");
+            Log.i("TcpObjectReadThread", "TcpObjectReadThread线程启动！");
             try {
                 TcpResponseMessage tcpResponseMessage = null;
                 while (ExamItemProcess.isExamStarted) {
@@ -130,12 +130,12 @@ public class TcpNetWorkServiceThread extends Thread {
                 e.printStackTrace();
             } finally {
                 if (ExamItemProcess.isExamStarted) {
-                    Log.e("TcpObjectReadThread", "Tcp服务object读取线程【非正常】停止！");
+                    Log.e("TcpObjectReadThread", "TcpObjectReadThread线程【非正常】停止！");
                     // 非正常退出，tcp线程启动失败
-                    ExamItemProcess.immediateStopOtherThread();
+                    ExamItemProcess.immediateStopOtherThread("考试终止，TcpObjectReadThread线程与车辆的Tcp连接异常中断！");
                 }
                 tcpObjectReadThread = null;
-                Log.i("TcpObjectReadThread", "Tcp服务object读取线程停止！");
+                Log.i("TcpObjectReadThread", "TcpObjectReadThread线程停止！");
             }
         }
     }

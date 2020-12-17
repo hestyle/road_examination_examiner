@@ -2,12 +2,15 @@ package cn.hestyle.road_examination_examiner.tcp;
 
 import android.util.Log;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import cn.hestyle.road_examination_examiner.ExamingActivity;
 import cn.hestyle.road_examination_examiner.entity.Car;
+import cn.hestyle.road_examination_examiner.entity.ExamOperation;
 import cn.hestyle.road_examination_examiner.entity.ExamUpdateUiBroadcastMessage;
 import cn.hestyle.road_examination_examiner.util.ExamUpdateUiBroadcastUtil;
 import cn.hestyle.tcp.TcpRequestMessage;
@@ -21,6 +24,15 @@ public class TcpResponseMessageHandler extends Thread {
     private static TcpResponseMessageHandler tcpResponseMessageHandler = null;
     /** 车辆端返回的消息 */
     public static LinkedList<TcpResponseMessage> tcpResponseMessageLinkedList = new LinkedList<>();
+    /** 考试项是否合格 */
+    public static volatile boolean isCorrect = false;
+    /** 灯光考试时，上一次灯光操作 */
+    public static volatile String beforeLightOperationName = null;
+    /** 考试项考试时的操作描述 */
+    public static final String defaultResultMessage = "未在规定时间内进行操作！";
+    public static volatile String resultMessage = defaultResultMessage;
+    /** 考试项包含的操作项 */
+    public static volatile List<ExamOperation> examOperationList = new ArrayList<>();
 
     private TcpResponseMessageHandler() {}
 
@@ -34,6 +46,8 @@ public class TcpResponseMessageHandler extends Thread {
                 tcpResponseMessageHandler = new TcpResponseMessageHandler();
             }
         }
+        examOperationList.clear();
+        beforeLightOperationName = null;
         tcpResponseMessageLinkedList.clear();
         return tcpResponseMessageHandler;
     }
@@ -63,7 +77,7 @@ public class TcpResponseMessageHandler extends Thread {
             if (ExamItemProcess.isExamStarted) {
                 Log.i("TcpResponseHandler", "TcpResponseMessageHandler线程【非正常】停止！");
                 // 非正常情况下停止
-                ExamItemProcess.immediateStopOtherThread();
+                ExamItemProcess.immediateStopOtherThread("考试终止，TcpResponseMessageHandler线程【非正常】停止！");
             }
             tcpResponseMessageHandler = null;
             Log.i("TcpResponseHandler", "TcpResponseMessageHandler线程已停止！");
@@ -79,6 +93,29 @@ public class TcpResponseMessageHandler extends Thread {
         synchronized (TcpResponseMessageHandler.class) {
             tcpResponseMessageLinkedList.addLast(tcpResponseMessage);
         }
+    }
+
+    /**
+     * 获取灯光考试项的结果
+     * @return      当前灯光考试项的结果
+     */
+    public static Map<String, Object> getExamItemResultMap() {
+        Map<String, Object> resultDataMap = new HashMap<>();
+        synchronized (TcpResponseMessageHandler.class) {
+            // 如果当前灯光考试项没有进行操作，则默认沿用上一次的灯光操作
+            if (defaultResultMessage.equals(resultMessage) && examOperationList.get(0).getName().equals(beforeLightOperationName)) {
+                // 并且是上一次灯光操作是当前灯光考试项的答案
+                resultDataMap.put("isCorrect", true);
+                resultDataMap.put("resultMessage", "正确" + examOperationList.get(0).getDescription());
+            } else {
+                resultDataMap.put("isCorrect", isCorrect);
+                resultDataMap.put("resultMessage", resultMessage);
+            }
+            // 重置结果
+            isCorrect = false;
+            resultMessage = defaultResultMessage;
+        }
+        return resultDataMap;
     }
 
     /**
@@ -130,6 +167,36 @@ public class TcpResponseMessageHandler extends Thread {
                 examUpdateUiBroadcastMessage.setData(messageDataMap);
                 ExamUpdateUiBroadcastUtil.sendBroadcast(ExamingActivity.examingActivity, examUpdateUiBroadcastMessage);
             }
+        } else if (TcpResponseMessage.RESPONSE_OPERATION_NAME.equals(tcpResponseMessage.getTypeName())) {
+            String operationName = tcpResponseMessage.getExamItemOperationName().get(0);
+            if (operationName == null) {
+                return;
+            }
+            // 处理operation操作
+            if (ExamItemProcess.isLightExaming) {
+                // 正在灯光考试，只检测灯光操作，其它操作不做评判
+                if (ExamOperation.isLightOperation(operationName)) {
+                    if (operationName.equals(examOperationList.get(0).getName())) {
+                        synchronized (TcpResponseMessageHandler.class) {
+                            isCorrect = true;
+                            // 保存当前的灯光操作
+                            beforeLightOperationName = operationName;
+                            resultMessage = "正确" + examOperationList.get(0).getDescription();
+                        }
+                    } else {
+                        synchronized (TcpResponseMessageHandler.class) {
+                            isCorrect = false;
+                            // 保存当前的灯光操作
+                            beforeLightOperationName = operationName;
+                            resultMessage = "错误" + ExamOperation.getOpMsgByOpName(operationName);
+                        }
+                    }
+                }
+                return;
+            }
+            // 道路考试状态下
+        } else {
+            System.err.println("未知类型的TcpResponseMessage");
         }
     }
 }
