@@ -19,6 +19,7 @@ import java.util.Map;
 import cn.hestyle.road_examination_examiner.ExamingActivity;
 import cn.hestyle.road_examination_examiner.LoginActivity;
 import cn.hestyle.road_examination_examiner.entity.Car;
+import cn.hestyle.road_examination_examiner.entity.Exam;
 import cn.hestyle.road_examination_examiner.entity.ExamItem;
 import cn.hestyle.road_examination_examiner.entity.ExamOperation;
 import cn.hestyle.road_examination_examiner.entity.ExamTemplate;
@@ -159,6 +160,62 @@ public class ExamItemProcess {
         } else {
             Log.e("ExamOperation", "考试项 id = " + examItem.getId() + " operationIds字段为空！");
         }
+    }
+
+    /**
+     * 将考试结果上传到服务器
+     * @param exam      包含考试结果的考试信息
+     */
+    public static void uploadExamResult(Exam exam) {
+        Gson gson = new Gson();
+        // 访问服务器，提交登录表单
+        FormBody formBody = new FormBody.Builder()
+                .add("newExamInfoJsonData", gson.toJson(exam))
+                .build();
+        Request request = new Request.Builder()
+                .url("http://" + SettingFragment.serverIpAddressString + ":" + SettingFragment.serverPortString + "/road_examination_manager/exam/modifyExamInfo.do")
+                .addHeader("Cookie", "JSESSIONID=" + LoginActivity.jSessionIdString)
+                .post(formBody)
+                .build();
+        OkHttpClient httpClient = new OkHttpClient();
+        Call call = httpClient.newCall(request);
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                Log.e("Exam", "考试结果上传失败，发生网络错误！");
+                ExamUpdateUiBroadcastMessage examItemResultMessage = new ExamUpdateUiBroadcastMessage();
+                examItemResultMessage.setTypeName(ExamUpdateUiBroadcastMessage.EXAM_RESULT_UPLOAD);
+                Map<String, Object> resultMap = new HashMap<>();
+                resultMap.put("isSuccess", false);
+                examItemResultMessage.setMessage("考试结果上传失败，发生网络错误！");
+                examItemResultMessage.setData(resultMap);
+                ExamUpdateUiBroadcastUtil.sendBroadcast(ExamingActivity.examingActivity, examItemResultMessage);
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                String responseString = response.body().string();
+                // 转json
+                Gson gson = new Gson();
+                Type type =  new TypeToken<ResponseResult<Void>>(){}.getType();
+                ResponseResult<Void> responseResult = gson.fromJson(responseString, type);
+
+                ExamUpdateUiBroadcastMessage examItemResultMessage = new ExamUpdateUiBroadcastMessage();
+                examItemResultMessage.setTypeName(ExamUpdateUiBroadcastMessage.EXAM_RESULT_UPLOAD);
+                Map<String, Object> resultMap = new HashMap<>();
+                if (responseResult.getCode() == null || responseResult.getCode() != 200) {
+                    Log.e("Exam", "考试结果上传失败！msg = " + responseResult.getMessage());
+                    resultMap.put("isSuccess", false);
+                    examItemResultMessage.setMessage("考试结果上传失败," + responseResult.getMessage());
+                } else {
+                    Log.e("Exam", "考试结果上传成功！");
+                    resultMap.put("isSuccess", true);
+                    examItemResultMessage.setMessage("考试结果上传成功！");
+                }
+                examItemResultMessage.setData(resultMap);
+                ExamUpdateUiBroadcastUtil.sendBroadcast(ExamingActivity.examingActivity, examItemResultMessage);
+            }
+        });
     }
 
     /**

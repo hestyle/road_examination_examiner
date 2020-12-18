@@ -65,7 +65,14 @@ public class ExamOperation implements Serializable {
     public static final String SET_FIFTH_GEAR = "SET_FIFTH_GEAR";
     /** 挂倒挡 */
     public static final String SET_REVERSE_GEAR = "SET_REVERSE_GEAR";
-
+    /** 系上安全带 */
+    public static final String FASTEN_SEAT_BELT = "FASTEN_SEAT_BELT";
+    /** 解开安全带 */
+    public static final String UNFASTEN_SEAT_BELT = "UNFASTEN_SEAT_BELT";
+    /** 打开车门 */
+    public static final String OPEN_DOOR = "OPEN_DOOR";
+    /** 关上车门 */
+    public static final String CLOSE_DOOR = "CLOSE_DOOR";
 
 
     private static final Map<String, String> descriptionMap = new HashMap<>();
@@ -99,6 +106,10 @@ public class ExamOperation implements Serializable {
         descriptionMap.put("SET_FOURTH_GEAR", "挂4档");
         descriptionMap.put("SET_FIFTH_GEAR", "挂5档");
         descriptionMap.put("SET_REVERSE_GEAR", "挂倒挡");
+        descriptionMap.put("FASTEN_SEAT_BELT", "系上安全带");
+        descriptionMap.put("UNFASTEN_SEAT_BELT", "解开安全带");
+        descriptionMap.put("OPEN_DOOR", "打开车门");
+        descriptionMap.put("CLOSE_DOOR", "关上车门");
     }
 
     /**

@@ -20,6 +20,8 @@ public class ExamUpdateUiBroadcastMessage implements Serializable {
     public static final String EXAM_ITEM_OPERATE_RESULT = "EXAM_ITEM_RESULT";
     /** 考试已开始 */
     public static final String EXAM_HAS_STARTED = "EXAM_HAS_STARTED";
+    /** 考试结果上传 */
+    public static final String EXAM_RESULT_UPLOAD = "EXAM_RESULT_UPLOAD";
 
     /** 消息类型 */
     private String typeName;
