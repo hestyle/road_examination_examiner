@@ -115,29 +115,10 @@ public class ExamDetailActivity extends AppCompatActivity {
             Toast.makeText(ExamDetailActivity.this, "请先进行登录！", Toast.LENGTH_SHORT).show();
             return;
         }
-        exam_admissionNoTextView.setText(exam.getAdmissionNo());
-        exam_carIdTextView.setText(String.format("%d", exam.getCarId()));
-        exam_timeTextView.setText(exam.getExamTime());
-        if (exam.getState() == 0) {
-            exam_stateTextView.setText("未考试");
-            exam_stateTextView.setTextColor(Color.RED);
-            startExamButton.setVisibility(View.VISIBLE);
-            examResultLinearLayout.setVisibility(View.GONE);
-        } else {
-            exam_stateTextView.setText("已考试");
-            exam_stateTextView.setTextColor(Color.BLACK);
-            startExamButton.setVisibility(View.GONE);
-            examResultLinearLayout.setVisibility(View.VISIBLE);
-            exam_completedTimeTextView.setText(exam.getCompletedTime() + "");
-            exam_scoredTextView.setText(exam.getScored() + "");
-            if (exam.getIsPass() == null || exam.getIsPass() == 0) {
-                exam_isPassTextView.setText("未通过");
-                exam_isPassTextView.setTextColor(Color.RED);
-            } else {
-                exam_isPassTextView.setText("已通过");
-                exam_isPassTextView.setTextColor(Color.GREEN);
-            }
-            exam_scoreLossDescTextView.setText(exam.getScoreLossDesc() + "");
+
+        // 根据准考证号admissionNo查找exam
+        if (exam.getAdmissionNo() != null) {
+            this.getExamInfo();
         }
 
         // 根据candidateId查找candidate
@@ -151,6 +132,81 @@ public class ExamDetailActivity extends AppCompatActivity {
         if (exam.getExamTemplateId() != null) {
             this.getRoadExamTemplate();
         }
+    }
+
+    /**
+     * 获取exam信息
+     */
+    private void getExamInfo() {
+        FormBody formBody = new FormBody.Builder()
+                .add("admissionNo", exam.getAdmissionNo())
+                .build();
+        Request request = new Request.Builder()
+                .url("http://" + SettingFragment.serverIpAddressString + ":" + SettingFragment.serverPortString + "/road_examination_manager/exam/findExamInfoByAdmissionNo.do")
+                .addHeader("Cookie", "JSESSIONID=" + LoginActivity.jSessionIdString)
+                .post(formBody)
+                .build();
+        OkHttpClient httpClient = new OkHttpClient();
+        Call call = httpClient.newCall(request);
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(ExamDetailActivity.this, "考试信息刷新失败，发生网络错误！", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                String responseString = response.body().string();
+                // 转json
+                Gson gson = new Gson();
+                Type type =  new TypeToken<ResponseResult<Exam>>(){}.getType();
+                final ResponseResult<Exam> responseResult = gson.fromJson(responseString, type);
+                if (responseResult.getCode() == null || responseResult.getCode() != 200) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(ExamDetailActivity.this, responseResult.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                    return;
+                }
+                exam = responseResult.getData();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        exam_admissionNoTextView.setText(exam.getAdmissionNo());
+                        exam_carIdTextView.setText(String.format("%d", exam.getCarId()));
+                        exam_timeTextView.setText(exam.getExamTime());
+                        if (exam.getState() == 0) {
+                            exam_stateTextView.setText("未考试");
+                            exam_stateTextView.setTextColor(Color.RED);
+                            startExamButton.setVisibility(View.VISIBLE);
+                            examResultLinearLayout.setVisibility(View.GONE);
+                        } else {
+                            exam_stateTextView.setText("已考试");
+                            exam_stateTextView.setTextColor(Color.BLACK);
+                            startExamButton.setVisibility(View.GONE);
+                            examResultLinearLayout.setVisibility(View.VISIBLE);
+                            exam_completedTimeTextView.setText(exam.getCompletedTime() + "");
+                            exam_scoredTextView.setText(exam.getScored() + "");
+                            if (exam.getIsPass() == null || exam.getIsPass() == 0) {
+                                exam_isPassTextView.setText("未通过");
+                                exam_isPassTextView.setTextColor(Color.RED);
+                            } else {
+                                exam_isPassTextView.setText("已通过");
+                                exam_isPassTextView.setTextColor(Color.GREEN);
+                            }
+                            exam_scoreLossDescTextView.setText(exam.getScoreLossDesc() + "");
+                        }
+                    }
+                });
+            }
+        });
     }
 
     /**

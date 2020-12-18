@@ -25,6 +25,55 @@ public class ExamOperation implements Serializable {
     public static final String TURN_ON_HAZARD_WARN_LIGHT = "TURN_ON_HAZARD_WARN_LIGHT";
     /** 开远、近灯光交替 */
     public static final String TURN_ON_HIGH_DIPPED_LIGHT = "TURN_ON_HIGH_DIPPED_LIGHT";
+    /** 踩住离合踏板 */
+    public static final String STEP_ON_CLUTCH_PEDAL = "STEP_ON_CLUTCH_PEDAL";
+    /** 松开离合踏板 */
+    public static final String STEP_OFF_CLUTCH_PEDAL = "STEP_OFF_CLUTCH_PEDAL";
+    /** 踩住刹车踏板 */
+    public static final String STEP_ON_BRAKE_PEDAL = "STEP_ON_BRAKE_PEDAL";
+    /** 松开刹车踏板 */
+    public static final String STEP_OFF_BRAKE_PEDAL = "STEP_OFF_BRAKE_PEDAL";
+    /** 轻踏加速踏板 */
+    public static final String LIGHT_STEP_ON_ACCELERATOR_PEDAL = "LIGHT_STEP_ON_ACCELERATOR_PEDAL";
+    /** 松开加速踏板 */
+    public static final String STEP_OFF_ACCELERATOR_PEDAL = "STEP_OFF_ACCELERATOR_PEDAL";
+    /** 左打方向盘[0°,15°)，大约半圈 */
+    public static final String STEER_WHEEL_SLIGHT_TURN_LEFT = "STEER_WHEEL_SLIGHT_TURN_LEFT";
+    /** 右打方向盘(-15°,0°]，大约半圈 */
+    public static final String STEER_WHEEL_SLIGHT_TURN_RIGHT = "STEER_WHEEL_SLIGHT_TURN_RIGHT";
+    /** 左打方向盘[15°,45°)，大约一圈 */
+    public static final String STEER_WHEEL_MODERATE_TURN_LEFT = "STEER_WHEEL_MODERATE_TURN_LEFT";
+    /** 右打方向盘(-45°,-15°]，大约一圈 */
+    public static final String STEER_WHEEL_MODERATE_TURN_RIGHT = "STEER_WHEEL_MODERATE_TURN_RIGHT";
+    /** 拉起手刹 */
+    public static final String PULL_UP_PARK_BRAKE = "PULL_UP_PARK_BRAKE";
+    /** 放下手刹 */
+    public static final String PULL_DOWN_PARK_BRAKE = "PULL_DOWN_PARK_BRAKE";
+    /** 观察后视镜 */
+    public static final String OBSERVE_REARVIEW_MIRROR = "OBSERVE_REARVIEW_MIRROR";
+    /** 挂空挡 */
+    public static final String SET_NEUTRAL_GEAR = "SET_NEUTRAL_GEAR";
+    /** 挂前进挡（1档） */
+    public static final String SET_FORWARD_GEAR = "SET_FORWARD_GEAR";
+    /** 挂2档 */
+    public static final String SET_SECOND_GEAR = "SET_SECOND_GEAR";
+    /** 挂3档 */
+    public static final String SET_THIRD_GEAR = "SET_THIRD_GEAR";
+    /** 挂4档 */
+    public static final String SET_FOURTH_GEAR = "SET_FOURTH_GEAR";
+    /** 挂5档 */
+    public static final String SET_FIFTH_GEAR = "SET_FIFTH_GEAR";
+    /** 挂倒挡 */
+    public static final String SET_REVERSE_GEAR = "SET_REVERSE_GEAR";
+    /** 系上安全带 */
+    public static final String FASTEN_SEAT_BELT = "FASTEN_SEAT_BELT";
+    /** 解开安全带 */
+    public static final String UNFASTEN_SEAT_BELT = "UNFASTEN_SEAT_BELT";
+    /** 打开车门 */
+    public static final String OPEN_DOOR = "OPEN_DOOR";
+    /** 关上车门 */
+    public static final String CLOSE_DOOR = "CLOSE_DOOR";
+
 
     private static final Map<String, String> descriptionMap = new HashMap<>();
 
@@ -37,6 +86,30 @@ public class ExamOperation implements Serializable {
         descriptionMap.put("TURN_ON_FOG_LIGHT", "开启雾灯");
         descriptionMap.put("TURN_ON_HAZARD_WARN_LIGHT", "开启危险警报闪光灯");
         descriptionMap.put("TURN_ON_HIGH_DIPPED_LIGHT", "开启远、近灯光交替");
+        descriptionMap.put("STEP_ON_CLUTCH_PEDAL", "踩住离合踏板");
+        descriptionMap.put("STEP_OFF_CLUTCH_PEDAL", "松开离合踏板");
+        descriptionMap.put("STEP_ON_BRAKE_PEDAL", "踩住刹车踏板");
+        descriptionMap.put("STEP_OFF_BRAKE_PEDAL", "松开刹车踏板");
+        descriptionMap.put("LIGHT_STEP_ON_ACCELERATOR_PEDAL", "轻踏加速踏板");
+        descriptionMap.put("STEP_OFF_ACCELERATOR_PEDAL", "松开加速踏板");
+        descriptionMap.put("STEER_WHEEL_SLIGHT_TURN_LEFT", "左打方向盘[0°,15°)，大约半圈");
+        descriptionMap.put("STEER_WHEEL_SLIGHT_TURN_RIGHT", "右打方向盘(-15°,0°]，大约半圈");
+        descriptionMap.put("STEER_WHEEL_MODERATE_TURN_LEFT", "左打方向盘[15°,45°)，大约一圈");
+        descriptionMap.put("STEER_WHEEL_MODERATE_TURN_RIGHT", "右打方向盘(-45°,-15°]，大约一圈");
+        descriptionMap.put("PULL_UP_PARK_BRAKE", "拉起手刹");
+        descriptionMap.put("PULL_DOWN_PARK_BRAKE", "放下手刹");
+        descriptionMap.put("OBSERVE_REARVIEW_MIRROR", "观察后视镜");
+        descriptionMap.put("SET_NEUTRAL_GEAR", "挂空挡");
+        descriptionMap.put("SET_FORWARD_GEAR", "挂前进挡（1档）");
+        descriptionMap.put("SET_SECOND_GEAR", "挂2档");
+        descriptionMap.put("SET_THIRD_GEAR", "挂3档");
+        descriptionMap.put("SET_FOURTH_GEAR", "挂4档");
+        descriptionMap.put("SET_FIFTH_GEAR", "挂5档");
+        descriptionMap.put("SET_REVERSE_GEAR", "挂倒挡");
+        descriptionMap.put("FASTEN_SEAT_BELT", "系上安全带");
+        descriptionMap.put("UNFASTEN_SEAT_BELT", "解开安全带");
+        descriptionMap.put("OPEN_DOOR", "打开车门");
+        descriptionMap.put("CLOSE_DOOR", "关上车门");
     }
 
     /**
