@@ -36,6 +36,10 @@ public class TcpResponseMessageHandler extends Thread {
     private static volatile Integer nextExamOperationIndex = null;
     /** 考试项包含的操作项 */
     public static volatile List<ExamOperation> examOperationList = new ArrayList<>();
+    /** 车门状态 */
+    private static volatile boolean isDoorClosed = false;
+    /** 安全带状态 */
+    private static volatile boolean isSeatBeltFasten = false;
 
     private TcpResponseMessageHandler() {}
 
@@ -49,6 +53,9 @@ public class TcpResponseMessageHandler extends Thread {
                 tcpResponseMessageHandler = new TcpResponseMessageHandler();
             }
         }
+        // 默认安全带未系上、车门未关闭
+        isDoorClosed = false;
+        isSeatBeltFasten = false;
         examOperationList.clear();
         beforeLightOperationName = null;
         tcpResponseMessageLinkedList.clear();
@@ -219,6 +226,19 @@ public class TcpResponseMessageHandler extends Thread {
             if (operationName == null) {
                 return;
             }
+            if (!isDoorClosed) {
+                // 车门未关闭，就进行考试操作，零分
+                ExamUpdateUiBroadcastMessage examUpdateUiBroadcastMessage = new ExamUpdateUiBroadcastMessage();
+                examUpdateUiBroadcastMessage.setTypeName(ExamUpdateUiBroadcastMessage.EXAM_STOPPED_BY_DANGEROUS_OPERATION);
+                examUpdateUiBroadcastMessage.setMessage("考试前未关上车门，考试成绩计零分！");
+                ExamUpdateUiBroadcastUtil.sendBroadcast(ExamingActivity.examingActivity, examUpdateUiBroadcastMessage);
+            } else if (!isSeatBeltFasten) {
+                // 安全带未系，就进行考试操作，零分
+                ExamUpdateUiBroadcastMessage examUpdateUiBroadcastMessage = new ExamUpdateUiBroadcastMessage();
+                examUpdateUiBroadcastMessage.setTypeName(ExamUpdateUiBroadcastMessage.EXAM_STOPPED_BY_DANGEROUS_OPERATION);
+                examUpdateUiBroadcastMessage.setMessage("考试前未系上安全带，考试成绩计零分！");
+                ExamUpdateUiBroadcastUtil.sendBroadcast(ExamingActivity.examingActivity, examUpdateUiBroadcastMessage);
+            }
             // 处理operation操作
             if (ExamItemProcess.isLightExaming) {
                 // 正在灯光考试，只检测灯光操作，其它操作不做评判
@@ -270,6 +290,38 @@ public class TcpResponseMessageHandler extends Thread {
                             nextExamOperationIndex = Integer.MAX_VALUE;
                         }
                     }
+                }
+            }
+        } else if (TcpResponseMessage.RESPONSE_BASE_STATE.equals(tcpResponseMessage.getTypeName())) {
+            // 处理汇报基本状态的tcpMessage
+            String operationName = tcpResponseMessage.getExamItemOperationName().get(0);
+            if (ExamOperation.CLOSE_DOOR.equals(operationName)) {
+                // 关上了车门
+                isDoorClosed = true;
+            } else if (ExamOperation.FASTEN_SEAT_BELT.equals(operationName)) {
+                // 系上了安全带
+                isSeatBeltFasten = true;
+            } else if (ExamOperation.OPEN_DOOR.equals(operationName)) {
+                // 打开了车门
+                if (ExamItemProcess.isExamStarted) {
+                    // 发送停止考试更新ui的通知
+                    ExamUpdateUiBroadcastMessage examUpdateUiBroadcastMessage = new ExamUpdateUiBroadcastMessage();
+                    examUpdateUiBroadcastMessage.setTypeName(ExamUpdateUiBroadcastMessage.EXAM_STOPPED_BY_DANGEROUS_OPERATION);
+                    examUpdateUiBroadcastMessage.setMessage("考试过程中出现打开车门的危险操作，考试成绩计零分！");
+                    ExamUpdateUiBroadcastUtil.sendBroadcast(ExamingActivity.examingActivity, examUpdateUiBroadcastMessage);
+                } else {
+                    isDoorClosed = false;
+                }
+            } else if (ExamOperation.UNFASTEN_SEAT_BELT.equals(operationName)) {
+                // 解开了安全带
+                if (ExamItemProcess.isExamStarted) {
+                    // 发送停止考试更新ui的通知
+                    ExamUpdateUiBroadcastMessage examUpdateUiBroadcastMessage = new ExamUpdateUiBroadcastMessage();
+                    examUpdateUiBroadcastMessage.setTypeName(ExamUpdateUiBroadcastMessage.EXAM_STOPPED_BY_DANGEROUS_OPERATION);
+                    examUpdateUiBroadcastMessage.setMessage("考试过程中出现解安全带的危险操作，考试成绩计零分！");
+                    ExamUpdateUiBroadcastUtil.sendBroadcast(ExamingActivity.examingActivity, examUpdateUiBroadcastMessage);
+                } else {
+                    isSeatBeltFasten = false;
                 }
             }
         } else {

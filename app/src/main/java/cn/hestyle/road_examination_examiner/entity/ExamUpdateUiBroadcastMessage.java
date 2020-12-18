@@ -14,6 +14,8 @@ public class ExamUpdateUiBroadcastMessage implements Serializable {
     public static final String CAR_SETTING_RESULT = "CAR_SETTING_RESULT";
     /** 考试被exception终止 */
     public static final String EXAM_STOPPED_BY_EXCEPTION = "EXAM_STOPPED_BY_EXCEPTION";
+    /** 考试被危险操作终止 */
+    public static final String EXAM_STOPPED_BY_DANGEROUS_OPERATION = "EXAM_STOPPED_BY_DANGEROUS_OPERATION";
     /** 考试项开始 */
     public static final String EXAM_ITEM_START = "EXAM_ITEM_START";
     /** 考试项操作结果 */
