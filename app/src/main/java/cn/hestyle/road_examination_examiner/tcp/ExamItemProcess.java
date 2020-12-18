@@ -129,7 +129,7 @@ public class ExamItemProcess {
     /**
      * 停止考试时，重置各个flag
      */
-    private static void stopExamFlagReset() {
+    public static void stopExamFlagReset() {
         ExamItemProcess.isExamStarted = false;
         ExamItemProcess.isLightExaming = false;
         ExamItemProcess.isExaming = false;

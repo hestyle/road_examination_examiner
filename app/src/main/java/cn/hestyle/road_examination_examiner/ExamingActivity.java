@@ -479,6 +479,36 @@ public class ExamingActivity extends AppCompatActivity {
                 } else {
                     Toast.makeText(ExamingActivity.examingActivity, examUpdateUiBroadcastMessage.getMessage(), Toast.LENGTH_LONG).show();
                 }
+            } else if (ExamUpdateUiBroadcastMessage.EXAM_STOPPED_BY_DANGEROUS_OPERATION.equals(examUpdateUiBroadcastMessage.getTypeName())) {
+                // 考试过程中，出现危险操作，强制停止考试，并且考试计零分
+                calculateScoreInfoTextView.append(examUpdateUiBroadcastMessage.getMessage() + "\n");
+                hadScore = 0;
+                hadScoreTextView.setText("0");
+                hadScoreTextView.setTextColor(Color.RED);
+                ExamItemProcess.stopExam();
+                AlertDialog alertDialog = new AlertDialog.Builder(ExamingActivity.examingActivity)
+                        .setTitle("提示信息")
+                        .setMessage("考试结束，由于" + examUpdateUiBroadcastMessage.getMessage())
+                        .setCancelable(false)
+                        .setPositiveButton("结束考试", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                // 结束计时器
+                                if (calExamTimerTask != null) {
+                                    calExamTimerTask.cancel();
+                                }
+                                // 更新考试结果
+                                exam.setIsPass(0);
+                                exam.setState(2);
+                                exam.setScored(hadScore);
+                                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                                exam.setCompletedTime(simpleDateFormat.format(new Date()));
+                                exam.setScoreLossDesc(calculateScoreInfoTextView.getText().toString());
+                                ExamItemProcess.uploadExamResult(exam);
+                            }
+                        })
+                        .create();
+                alertDialog.show();
             }
         }
     }
