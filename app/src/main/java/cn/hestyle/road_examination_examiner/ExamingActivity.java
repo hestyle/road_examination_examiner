@@ -85,6 +85,8 @@ public class ExamingActivity extends AppCompatActivity {
 
     private List<ExamItem> lightExamItemList = new ArrayList<>();
     private List<ExamItem> roadExamItemList = new ArrayList<>();
+    // 标记道路考试项是否已点考
+    private List<Boolean> roadExamItemHadExamedList = new ArrayList<>();
 
     private ExamBroadcastReceiver examBroadcastReceiver = null;
     /** 其它子线程发送通知的上下文 */
@@ -105,6 +107,7 @@ public class ExamingActivity extends AppCompatActivity {
         candidate = (Candidate) intent.getSerializableExtra("candidate");
         lightExamTemplate = (ExamTemplate) intent.getSerializableExtra("lightExamTemplate");
         roadExamTemplate = (ExamTemplate) intent.getSerializableExtra("roadExamTemplate");
+        roadExamItemHadExamedList = new ArrayList<>();
 
         candidatePhotoImageView = findViewById(R.id.candidatePhotoImageView);
         candidateNameTextView = findViewById(R.id.candidateNameTextView);
@@ -125,12 +128,17 @@ public class ExamingActivity extends AppCompatActivity {
         roadExamItemAdapter = new ExamItemAdapter();
         examItemListView.setAdapter(roadExamItemAdapter);
         contentScrollView = findViewById(R.id.contentScrollView);
-        examItemListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-            }
-        });
+//        examItemListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//            @Override
+//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+//                // 检查该考试项是否已点考
+//                if (position < roadExamItemHadExamedList.size() && roadExamItemHadExamedList.get(position)) {
+//                    return;
+//                }
+//                // 开始新road examItem
+//                ExamItemProcess.startRoadExamItem(roadExamItemList.get(position), position);
+//            }
+//        });
 
         settingExamCarButton = findViewById(R.id.settingExamCarButton);
         settingExamCarButton.setOnClickListener(new View.OnClickListener() {
@@ -250,6 +258,11 @@ public class ExamingActivity extends AppCompatActivity {
         if (roadExamTemplate != null) {
             roadExamItemList.clear();
             roadExamItemList.addAll(roadExamTemplate.getExamItemList());
+            roadExamItemHadExamedList = new ArrayList<>();
+            // 默认所有道路考试项都没有点考
+            for (int i = 0; i < roadExamItemList.size(); ++i) {
+                roadExamItemHadExamedList.add(false);
+            }
             roadExamItemAdapter.notifyDataSetChanged();
         }
     }
@@ -290,7 +303,7 @@ public class ExamingActivity extends AppCompatActivity {
             return position;
         }
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
+        public View getView(final int position, View convertView, ViewGroup parent) {
             ViewHolder viewHolder = new ViewHolder();
             //通过下面的条件判断语句，来循环利用。如果convertView = null ，表示屏幕上没有可以被重复利用的对象。
             if(convertView == null ){
@@ -301,8 +314,21 @@ public class ExamingActivity extends AppCompatActivity {
             } else {
                 viewHolder = (ViewHolder) convertView.getTag();
             }
+            // 检查该考试项是否已点考
+            if (position < roadExamItemHadExamedList.size() && roadExamItemHadExamedList.get(position)) {
+                viewHolder.examItemButton.setEnabled(false);
+            } else {
+                viewHolder.examItemButton.setEnabled(true);
+            }
             ExamItem examItem = roadExamItemList.get(position);
             viewHolder.examItemButton.setText(examItem.getName());
+            viewHolder.examItemButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // 开始新road examItem
+                    ExamItemProcess.startRoadExamItem(roadExamItemList.get(position), position);
+                }
+            });
             return convertView;
         }
     }
@@ -347,8 +373,17 @@ public class ExamingActivity extends AppCompatActivity {
                 alertDialog.show();
             } else if (ExamUpdateUiBroadcastMessage.EXAM_ITEM_START.equals(examUpdateUiBroadcastMessage.getTypeName())) {
                 // 开始了一个新的examItem
-                examItem = (ExamItem) examUpdateUiBroadcastMessage.getData().get("examItem");
+                Map<String, Object> dataMap = examUpdateUiBroadcastMessage.getData();
+                examItem = (ExamItem) dataMap.get("examItem");
                 System.err.println("开始了一个新ExamItem " + examItem.toString());
+                if (dataMap.containsKey("examItemPosition")) {
+                    Integer examItemPosition = (Integer) dataMap.get("examItemPosition");
+                    if (examItemPosition < roadExamItemList.size()) {
+                        // 已点考了一个考试项
+                        roadExamItemHadExamedList.set(examItemPosition, true);
+                        roadExamItemAdapter.notifyDataSetChanged();
+                    }
+                }
             } else if (ExamUpdateUiBroadcastMessage.EXAM_ITEM_OPERATE_RESULT.equals(examUpdateUiBroadcastMessage.getTypeName())) {
                 // examItem操作结果
                 Map<String, Object> dataMap = examUpdateUiBroadcastMessage.getData();
@@ -363,9 +398,9 @@ public class ExamingActivity extends AppCompatActivity {
                     } else {
                         hadScoreTextView.setTextColor(Color.BLACK);
                     }
-                    calculateScoreInfoTextView.append("考试项" + examItem.getName() + "扣 " + examItem.getScore() + " 分，因为" + resultMessage + "\n");
+                    calculateScoreInfoTextView.append("考试项【" + examItem.getName() + "】扣 " + examItem.getScore() + " 分，因为" + resultMessage + "\n");
                 } else {
-                    calculateScoreInfoTextView.append("考试项" + examItem.getName() + "得 " + examItem.getScore() + " 分\n");
+                    calculateScoreInfoTextView.append("考试项【" + examItem.getName() + "】得 " + examItem.getScore() + " 分\n");
                 }
             } else if (ExamUpdateUiBroadcastMessage.EXAM_HAS_STARTED.equals(examUpdateUiBroadcastMessage.getTypeName())) {
                 // 考试已经开始，开始考试按钮disable，停止考试enable

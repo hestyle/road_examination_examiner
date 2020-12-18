@@ -31,6 +31,9 @@ public class TcpResponseMessageHandler extends Thread {
     /** 考试项考试时的操作描述 */
     public static final String defaultResultMessage = "未在规定时间内进行操作！";
     public static volatile String resultMessage = defaultResultMessage;
+    /** (道路)考试项考试中，下一个操作项所在examOperationList的下标 */
+    public static volatile boolean hadResult = false;
+    private static volatile Integer nextExamOperationIndex = null;
     /** 考试项包含的操作项 */
     public static volatile List<ExamOperation> examOperationList = new ArrayList<>();
 
@@ -125,6 +128,43 @@ public class TcpResponseMessageHandler extends Thread {
     }
 
     /**
+     * 开始一个道路考试项
+     * @param examOperationList     该考试项包含的考试操作项
+     */
+    public static void startRoadExamItem(List<ExamOperation> examOperationList) {
+        synchronized (TcpResponseMessageHandler.class) {
+            isCorrect = false;
+            hadResult = false;
+            resultMessage = defaultResultMessage;
+            TcpResponseMessageHandler.nextExamOperationIndex = 0;
+            TcpResponseMessageHandler.examOperationList.clear();
+            TcpResponseMessageHandler.examOperationList.addAll(examOperationList);
+        }
+    }
+
+    /**
+     * 获取RoadExamItem的结果
+     */
+    public static Map<String, Object> getRoadExamItemResult() {
+        Map<String, Object> resultDataMap = new HashMap<>();
+        synchronized (TcpResponseMessageHandler.class) {
+            if (nextExamOperationIndex < examOperationList.size()) {
+                // 操作不完整
+                resultDataMap.put("isCorrect", false);
+                resultDataMap.put("resultMessage", "未进行【" + examOperationList.get(nextExamOperationIndex).getDescription() + "】等操作");
+            } else {
+                resultDataMap.put("isCorrect", isCorrect);
+                resultDataMap.put("resultMessage", resultMessage);
+            }
+            // 重置结果
+            isCorrect = false;
+            resultMessage = defaultResultMessage;
+            examOperationList.clear();
+        }
+        return resultDataMap;
+    }
+
+    /**
      * 处理远端返回的tcpResponseMessage
      * @param tcpResponseMessage    待处理的tcpResponseMessage
      */
@@ -198,9 +238,39 @@ public class TcpResponseMessageHandler extends Thread {
                         }
                     }
                 }
-                return;
+            } else if (ExamItemProcess.isExaming) {
+                // 道路考试状态下
+                if (nextExamOperationIndex < examOperationList.size()) {
+                    // 操作项列表未匹配完
+                    if (operationName.equals(examOperationList.get(nextExamOperationIndex).getName())) {
+                        synchronized (TcpResponseMessageHandler.class) {
+                            // 成功匹配一个操作，下标后移
+                            nextExamOperationIndex += 1;
+                        }
+                        if (nextExamOperationIndex == examOperationList.size()) {
+                            // 刚好匹配完list，操作完美
+                            synchronized (TcpResponseMessageHandler.class) {
+                                hadResult = true;
+                                nextExamOperationIndex = Integer.MAX_VALUE;
+                                isCorrect = true;
+                                resultMessage = "操作完美";
+                            }
+                        }
+                    } else {
+                        // 操作不匹配，直接结束
+                        synchronized (TcpResponseMessageHandler.class) {
+                            hadResult = true;
+                            isCorrect = false;
+                            if (nextExamOperationIndex == 0) {
+                                resultMessage = "未进行【" + examOperationList.get(0).getDescription() + "】操作";
+                            } else {
+                                resultMessage = "【" + examOperationList.get(nextExamOperationIndex - 1).getDescription() + "】操作后未进行【" + examOperationList.get(nextExamOperationIndex).getDescription() + "】操作";
+                            }
+                            nextExamOperationIndex = Integer.MAX_VALUE;
+                        }
+                    }
+                }
             }
-            // 道路考试状态下
         } else {
             System.err.println("未知类型的TcpResponseMessage");
         }
