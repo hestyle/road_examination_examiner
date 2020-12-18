@@ -325,8 +325,16 @@ public class ExamingActivity extends AppCompatActivity {
             viewHolder.examItemButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    // 开始新road examItem
-                    ExamItemProcess.startRoadExamItem(roadExamItemList.get(position), position);
+                    if (!ExamItemProcess.isExamStarted || !ExamItemProcess.isExaming) {
+                        // 判断是否在考试
+                        Toast.makeText(ExamingActivity.this, "请配置考试车辆，点击开始考试按钮，再点考！", Toast.LENGTH_LONG).show();
+                    } else if (ExamItemProcess.isLightExaming) {
+                        // 灯光考试过程中无法点考
+                        Toast.makeText(ExamingActivity.this, "正在灯光考试中，无法点考！", Toast.LENGTH_LONG).show();
+                    } else {
+                        // 开始新road examItem
+                        ExamItemProcess.startRoadExamItem(roadExamItemList.get(position), position);
+                    }
                 }
             });
             return convertView;
