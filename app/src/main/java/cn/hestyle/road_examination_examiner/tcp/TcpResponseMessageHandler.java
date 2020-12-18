@@ -158,6 +158,7 @@ public class TcpResponseMessageHandler extends Thread {
             }
             // 重置结果
             isCorrect = false;
+            nextExamOperationIndex = null;
             resultMessage = defaultResultMessage;
             examOperationList.clear();
         }
@@ -238,7 +239,7 @@ public class TcpResponseMessageHandler extends Thread {
                         }
                     }
                 }
-            } else if (ExamItemProcess.isExaming) {
+            } else if (ExamItemProcess.isExaming && nextExamOperationIndex != null) {
                 // 道路考试状态下
                 if (nextExamOperationIndex < examOperationList.size()) {
                     // 操作项列表未匹配完
