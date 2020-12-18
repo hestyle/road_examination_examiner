@@ -15,7 +15,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProviders;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -54,6 +53,8 @@ public class MyInvigilationFragment extends Fragment {
     private RadioButton defaultSortRadioButton = null;
     private RadioButton dateDescSortRadioButton = null;
     private RadioButton dateAscSortRadioButton = null;
+    /** list header */
+    private View examListViewHeaderView = null;
     /** list */
     private ListView examListView = null;
     /** list adapter */
@@ -63,22 +64,20 @@ public class MyInvigilationFragment extends Fragment {
     /** listView中的exam */
     private List<Exam> inListData = new ArrayList<>();
 
-
-    private MyInvigilationViewModel myInvigilationViewModel;
-
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        myInvigilationViewModel =
-                ViewModelProviders.of(this).get(MyInvigilationViewModel.class);
         View root = inflater.inflate(R.layout.fragment_my_invigilation, container, false);
-        allExamRadioButton = root.findViewById(R.id.allExamRadioButton);
-        noExamRadioButton = root.findViewById(R.id.noExamRadioButton);
-        examedRadioButton = root.findViewById(R.id.examedRadioButton);
-        todayExamRadioButton = root.findViewById(R.id.todayExamRadioButton);
-        defaultSortRadioButton = root.findViewById(R.id.defaultSortRadioButton);
-        dateDescSortRadioButton = root.findViewById(R.id.dateDescSortRadioButton);
-        dateAscSortRadioButton = root.findViewById(R.id.dateAscSortRadioButton);
+        examListViewHeaderView = View.inflate(MyInvigilationFragment.this.getActivity(), R.layout.fragment_my_invigilation_header, null);
+        allExamRadioButton = examListViewHeaderView.findViewById(R.id.allExamRadioButton);
+        noExamRadioButton = examListViewHeaderView.findViewById(R.id.noExamRadioButton);
+        examedRadioButton = examListViewHeaderView.findViewById(R.id.examedRadioButton);
+        todayExamRadioButton = examListViewHeaderView.findViewById(R.id.todayExamRadioButton);
+        defaultSortRadioButton = examListViewHeaderView.findViewById(R.id.defaultSortRadioButton);
+        dateDescSortRadioButton = examListViewHeaderView.findViewById(R.id.dateDescSortRadioButton);
+        dateAscSortRadioButton = examListViewHeaderView.findViewById(R.id.dateAscSortRadioButton);
+
         examListView = root.findViewById(R.id.examListView);
+        examListView.addHeaderView(examListViewHeaderView, null, true);
         examAdapter = new ExamAdapter();
         examListView.setAdapter(examAdapter);
         examListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
