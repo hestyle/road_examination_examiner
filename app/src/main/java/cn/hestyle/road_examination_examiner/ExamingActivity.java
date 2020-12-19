@@ -79,6 +79,8 @@ public class ExamingActivity extends AppCompatActivity {
     private Integer hadScore;
     private TextView hadScoreTextView;
     private TextView calculateScoreInfoTextView;
+    /** 记录已经考试过的examItem个数 */
+    private Integer examItemCount = 0;
 
     private ScrollView contentScrollView;
     private ListView examItemListView;
@@ -436,8 +438,9 @@ public class ExamingActivity extends AppCompatActivity {
                 Map<String, Object> dataMap = examUpdateUiBroadcastMessage.getData();
                 Boolean isCorrect = (Boolean) dataMap.get("isCorrect");
                 String resultMessage = (String) dataMap.get("resultMessage");
+                examItemCount += 1;
                 if (!isCorrect) {
-                    calculateScoreInfoTextView.append("考试项【" + examItem.getName() + "】丢失 " + examItem.getScore() + " 分，因为" + resultMessage + "\n");
+                    calculateScoreInfoTextView.append(examItemCount + "、考试项【" + examItem.getName() + "】丢失 " + examItem.getScore() + " 分，因为" + resultMessage + "\n");
                 } else {
                     // 加分
                     hadScore += examItem.getScore();
@@ -447,7 +450,7 @@ public class ExamingActivity extends AppCompatActivity {
                     } else {
                         hadScoreTextView.setTextColor(Color.BLACK);
                     }
-                    calculateScoreInfoTextView.append("考试项【" + examItem.getName() + "】得 " + examItem.getScore() + " 分\n");
+                    calculateScoreInfoTextView.append(examItemCount + "、考试项【" + examItem.getName() + "】得 " + examItem.getScore() + " 分\n");
                 }
             } else if (ExamUpdateUiBroadcastMessage.EXAM_HAS_STARTED.equals(examUpdateUiBroadcastMessage.getTypeName())) {
                 // 考试已经开始，开始考试按钮disable，停止考试enable
@@ -482,7 +485,8 @@ public class ExamingActivity extends AppCompatActivity {
                 }
             } else if (ExamUpdateUiBroadcastMessage.EXAM_STOPPED_BY_DANGEROUS_OPERATION.equals(examUpdateUiBroadcastMessage.getTypeName())) {
                 // 考试过程中，出现危险操作，强制停止考试，并且考试计零分
-                calculateScoreInfoTextView.append(examUpdateUiBroadcastMessage.getMessage() + "\n");
+                examItemCount += 1;
+                calculateScoreInfoTextView.append(examItemCount + "、" + examUpdateUiBroadcastMessage.getMessage() + "\n");
                 hadScore = 0;
                 hadScoreTextView.setText("0");
                 hadScoreTextView.setTextColor(Color.RED);
@@ -520,7 +524,8 @@ public class ExamingActivity extends AppCompatActivity {
                 } else {
                     hadScoreTextView.setTextColor(Color.BLACK);
                 }
-                calculateScoreInfoTextView.append(examUpdateUiBroadcastMessage.getMessage() + "\n");
+                examItemCount += 1;
+                calculateScoreInfoTextView.append(examItemCount + "、" + examUpdateUiBroadcastMessage.getMessage() + "\n");
             }
         }
     }
