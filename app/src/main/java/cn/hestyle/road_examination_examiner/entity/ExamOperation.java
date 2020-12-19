@@ -73,6 +73,10 @@ public class ExamOperation implements Serializable {
     public static final String OPEN_DOOR = "OPEN_DOOR";
     /** 关上车门 */
     public static final String CLOSE_DOOR = "CLOSE_DOOR";
+    /** 升档 */
+    public static final String SET_UP_GEAR = "SET_UP_GEAR";
+    /** 降档 */
+    public static final String SET_DOWN_GEAR = "SET_DOWN_GEAR";
 
 
     private static final Map<String, String> descriptionMap = new HashMap<>();
@@ -110,6 +114,8 @@ public class ExamOperation implements Serializable {
         descriptionMap.put("UNFASTEN_SEAT_BELT", "解开安全带");
         descriptionMap.put("OPEN_DOOR", "打开车门");
         descriptionMap.put("CLOSE_DOOR", "关上车门");
+        descriptionMap.put("SET_UP_GEAR", "升档");
+        descriptionMap.put("SET_DOWN_GEAR", "降档");
     }
 
     /**
@@ -146,6 +152,29 @@ public class ExamOperation implements Serializable {
      */
     public static String getOpMsgByOpName(String operationName) {
         return descriptionMap.get(operationName);
+    }
+
+    /**
+     * 判断是否是挂挡操作
+     * @param operationName 操作名
+     * @return              true false
+     */
+    public static boolean isSetGearOperation(String operationName) {
+        if (SET_NEUTRAL_GEAR.equals(operationName)) {
+            return true;
+        } else if (SET_FORWARD_GEAR.equals(operationName)) {
+            return true;
+        } else if (SET_SECOND_GEAR.equals(operationName)) {
+            return true;
+        } else if (SET_THIRD_GEAR.equals(operationName)) {
+            return true;
+        } else if (SET_FOURTH_GEAR.equals(operationName)) {
+            return true;
+        } else if (SET_FIFTH_GEAR.equals(operationName)) {
+            return true;
+        } else {
+            return SET_REVERSE_GEAR.equals(operationName);
+        }
     }
 
     /**id 主键、自动增长*/

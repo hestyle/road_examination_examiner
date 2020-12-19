@@ -46,6 +46,7 @@ public class TcpNetWorkServiceThread extends Thread {
         Log.i("TcpServiceThread", "TcpServiceThread线程已启动！");
         try {
             Socket socket = new Socket(car.getIpAddress(), Integer.parseInt(SettingFragment.tcpServerPortString));
+            socket.setKeepAlive(true);
             // 建立连接后，发送一个消息
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
             final TcpRequestMessage tcpRequestMessage = new TcpRequestMessage();
@@ -62,7 +63,7 @@ public class TcpNetWorkServiceThread extends Thread {
             tcpObjectReadThread.start();
             // 死循环，等待主线程关闭socket
             while (ExamItemProcess.isExamStarted || tcpRequestMessageLinkedList.size() != 0) {
-                if (socket.isClosed() || !socket.isConnected()) {
+                if (socket.isClosed()) {
                     throw new Exception("socket已关闭");
                 }
                 // 发message
@@ -73,7 +74,7 @@ public class TcpNetWorkServiceThread extends Thread {
                         objectOutputStream.writeObject(tcpRequestMessageLinkedList.removeFirst());
                     }
                 }
-                sleep(80);
+                sleep(200);
             }
             if (!socket.isClosed()) {
                 socket.close();

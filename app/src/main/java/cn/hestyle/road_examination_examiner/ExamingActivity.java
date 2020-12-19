@@ -510,6 +510,17 @@ public class ExamingActivity extends AppCompatActivity {
                         })
                         .create();
                 alertDialog.show();
+            } else if (ExamUpdateUiBroadcastMessage.EXAM_DEDUCT_POINT.equals(examUpdateUiBroadcastMessage.getTypeName())) {
+                // 考试过程中，出现扣分项
+                Map<String, Object> dataMap = examUpdateUiBroadcastMessage.getData();
+                hadScore -= (Integer) dataMap.get("score");
+                hadScoreTextView.setText(hadScore + "");
+                if (hadScore < 60) {
+                    hadScoreTextView.setTextColor(Color.RED);
+                } else {
+                    hadScoreTextView.setTextColor(Color.BLACK);
+                }
+                calculateScoreInfoTextView.append(examUpdateUiBroadcastMessage.getMessage() + "\n");
             }
         }
     }

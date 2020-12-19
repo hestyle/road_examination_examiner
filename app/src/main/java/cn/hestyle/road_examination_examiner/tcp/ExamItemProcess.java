@@ -284,8 +284,9 @@ public class ExamItemProcess {
             Collections.shuffle(lightExamTemplate.getExamItemList());
             // 遍历灯光考试模板中的考试项
             Iterator<ExamItem> iterator = lightExamTemplate.getExamItemList().iterator();
+            MediaPlayer mediaPlayer = null;
             try {
-                MediaPlayer mediaPlayer = new MediaPlayer();
+                mediaPlayer = new MediaPlayer();
                 mediaPlayer.reset();
                 // 播放“科目三道路考试”
                 mediaPlayer.setDataSource("http://" + SettingFragment.serverIpAddressString + ":" + SettingFragment.serverPortString + "/road_examination_manager/upload/audio/160809159797428104571.mp3");
@@ -352,6 +353,9 @@ public class ExamItemProcess {
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
+                if (mediaPlayer != null) {
+                    mediaPlayer.release();
+                }
                 if (isLightExaming && iterator.hasNext()) {
                     Log.e("LightExamThread", "灯光考试LightExamThread线程【非正常】停止！");
                     // 如果还在isLightExaming状态下，并且还有灯光考试项没处理，则说明上面出错了
@@ -380,8 +384,9 @@ public class ExamItemProcess {
         public void run() {
             super.run();
             Log.i("RoadExamItemThread", "RoadExamItemThread线程已启动！");
+            MediaPlayer mediaPlayer = null;
             try {
-                MediaPlayer mediaPlayer = new MediaPlayer();
+                mediaPlayer = new MediaPlayer();
                 mediaPlayer.reset();
                 mediaPlayer.setDataSource("http://" + SettingFragment.serverIpAddressString + ":" + SettingFragment.serverPortString + examItem.getVoicePath());
                 mediaPlayer.prepare();
@@ -429,6 +434,9 @@ public class ExamItemProcess {
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
+                if (mediaPlayer != null) {
+                    mediaPlayer.release();
+                }
                 Log.i("RoadExamItemThread", "RoadExamItemThread线程已停止！");
             }
         }

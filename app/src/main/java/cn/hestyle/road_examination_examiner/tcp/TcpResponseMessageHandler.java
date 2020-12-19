@@ -2,6 +2,13 @@ package cn.hestyle.road_examination_examiner.tcp;
 
 import android.util.Log;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import org.jetbrains.annotations.NotNull;
+
+import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -9,12 +16,22 @@ import java.util.List;
 import java.util.Map;
 
 import cn.hestyle.road_examination_examiner.ExamingActivity;
+import cn.hestyle.road_examination_examiner.LoginActivity;
 import cn.hestyle.road_examination_examiner.entity.Car;
 import cn.hestyle.road_examination_examiner.entity.ExamOperation;
 import cn.hestyle.road_examination_examiner.entity.ExamUpdateUiBroadcastMessage;
+import cn.hestyle.road_examination_examiner.entity.Gear;
+import cn.hestyle.road_examination_examiner.entity.ResponseResult;
+import cn.hestyle.road_examination_examiner.ui.setting.SettingFragment;
 import cn.hestyle.road_examination_examiner.util.ExamUpdateUiBroadcastUtil;
 import cn.hestyle.tcp.TcpRequestMessage;
 import cn.hestyle.tcp.TcpResponseMessage;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.FormBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 /**
  * TcpResponseMessage处理线程
@@ -40,6 +57,12 @@ public class TcpResponseMessageHandler extends Thread {
     private static volatile boolean isDoorClosed = false;
     /** 安全带状态 */
     private static volatile boolean isSeatBeltFasten = false;
+    /** 当前的档位 */
+    private static volatile Gear nowGear = null;
+    /** 档位配置 */
+    private static List<Gear> gearList = null;
+    /** 离合踏板是否踩住 */
+    private static boolean isStepOnClutchPedal = false;
 
     private TcpResponseMessageHandler() {}
 
@@ -53,6 +76,10 @@ public class TcpResponseMessageHandler extends Thread {
                 tcpResponseMessageHandler = new TcpResponseMessageHandler();
             }
         }
+        // 获取档位信息
+        nowGear = null;
+        getAllGear();
+        isStepOnClutchPedal = false;
         // 默认安全带未系上、车门未关闭
         isDoorClosed = false;
         isSeatBeltFasten = false;
@@ -74,7 +101,6 @@ public class TcpResponseMessageHandler extends Thread {
                     if (tcpResponseMessageLinkedList.size() != 0) {
                         tcpResponseMessage = tcpResponseMessageLinkedList.removeFirst();
                     }
-
                 }
                 if (tcpResponseMessage != null) {
                     TcpResponseMessageHandler.handleTcpResponseMessage(tcpResponseMessage);
@@ -92,7 +118,44 @@ public class TcpResponseMessageHandler extends Thread {
             tcpResponseMessageHandler = null;
             Log.i("TcpResponseHandler", "TcpResponseMessageHandler线程已停止！");
         }
+    }
 
+    /**
+     * 获取所有的档位信息
+     */
+    private static void getAllGear() {
+        FormBody formBody = new FormBody.Builder()
+                .add("pageIndex", 1 + "")
+                .add("pageSize", Integer.MAX_VALUE + "")
+                .build();
+        Request request = new Request.Builder()
+                .url("http://" + SettingFragment.serverIpAddressString + ":" + SettingFragment.serverPortString + "/road_examination_manager/gear/findByPage.do")
+                .addHeader("Cookie", "JSESSIONID=" + LoginActivity.jSessionIdString)
+                .post(formBody)
+                .build();
+        OkHttpClient httpClient = new OkHttpClient();
+        Call call = httpClient.newCall(request);
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                Log.e("TcpResponseMsgHandler", "档位信息获取失败，网络访问失败！");
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                String responseString = response.body().string();
+                // 转json
+                Gson gson = new Gson();
+                Type type =  new TypeToken<ResponseResult<List<Gear>>>(){}.getType();
+                ResponseResult<List<Gear>> responseResult = gson.fromJson(responseString, type);
+                // 判断是否登录成功
+                if (responseResult.getCode() == null || responseResult.getCode() != 200) {
+                    Log.e("TcpResponseMsgHandler", "档位信息获取失败，" + responseResult.getMessage());
+                    return;
+                }
+                gearList = responseResult.getData();
+            }
+        });
     }
 
     /**
@@ -232,12 +295,35 @@ public class TcpResponseMessageHandler extends Thread {
                 examUpdateUiBroadcastMessage.setTypeName(ExamUpdateUiBroadcastMessage.EXAM_STOPPED_BY_DANGEROUS_OPERATION);
                 examUpdateUiBroadcastMessage.setMessage("考试前未关上车门，考试成绩计零分！");
                 ExamUpdateUiBroadcastUtil.sendBroadcast(ExamingActivity.examingActivity, examUpdateUiBroadcastMessage);
+                return;
             } else if (!isSeatBeltFasten) {
                 // 安全带未系，就进行考试操作，零分
                 ExamUpdateUiBroadcastMessage examUpdateUiBroadcastMessage = new ExamUpdateUiBroadcastMessage();
                 examUpdateUiBroadcastMessage.setTypeName(ExamUpdateUiBroadcastMessage.EXAM_STOPPED_BY_DANGEROUS_OPERATION);
                 examUpdateUiBroadcastMessage.setMessage("考试前未系上安全带，考试成绩计零分！");
                 ExamUpdateUiBroadcastUtil.sendBroadcast(ExamingActivity.examingActivity, examUpdateUiBroadcastMessage);
+                return;
+            }
+            if (ExamOperation.isSetGearOperation(operationName)) {
+                // 如果是换挡操作，更新当前档位
+                if (!isStepOnClutchPedal) {
+                    // 换挡没有踩住离合
+                    ExamUpdateUiBroadcastMessage examUpdateUiBroadcastMessage = new ExamUpdateUiBroadcastMessage();
+                    examUpdateUiBroadcastMessage.setTypeName(ExamUpdateUiBroadcastMessage.EXAM_DEDUCT_POINT);
+                    Map<String, Object> detailMap = new HashMap<>();
+                    detailMap.put("score", 10);
+                    examUpdateUiBroadcastMessage.setData(detailMap);
+                    examUpdateUiBroadcastMessage.setMessage("没有踩住离合换挡，扣10分！");
+                    ExamUpdateUiBroadcastUtil.sendBroadcast(ExamingActivity.examingActivity, examUpdateUiBroadcastMessage);
+                    return;
+                }
+                nowGear = Gear.findGearByOperationName(gearList, operationName);
+            } else if (ExamOperation.STEP_ON_CLUTCH_PEDAL.equals(operationName)) {
+                // 踩住离合
+                isStepOnClutchPedal = true;
+            } else if (ExamOperation.STEP_OFF_CLUTCH_PEDAL.equals(operationName)) {
+                // 松开离合
+                isStepOnClutchPedal = false;
             }
             // 处理operation操作
             if (ExamItemProcess.isLightExaming) {
@@ -277,6 +363,46 @@ public class TcpResponseMessageHandler extends Thread {
                                 resultMessage = "操作完美";
                             }
                         }
+                    } else if (ExamOperation.SET_UP_GEAR.equals(examOperationList.get(nextExamOperationIndex).getName())) {
+                        // 判断升档操作
+                        if (nowGear != null && Gear.isSetUpGearOperationName(nowGear.getName(), operationName)) {
+                            synchronized (TcpResponseMessageHandler.class) {
+                                // 成功匹配一个操作，下标后移
+                                nextExamOperationIndex += 1;
+                            }
+                        } else {
+                            // 操作不匹配，直接结束
+                            synchronized (TcpResponseMessageHandler.class) {
+                                hadResult = true;
+                                isCorrect = false;
+                                if (nextExamOperationIndex == 0) {
+                                    resultMessage = "未进行【" + examOperationList.get(0).getDescription() + "】操作";
+                                } else {
+                                    resultMessage = "【" + examOperationList.get(nextExamOperationIndex - 1).getDescription() + "】操作后未进行【" + examOperationList.get(nextExamOperationIndex).getDescription() + "】操作";
+                                }
+                                nextExamOperationIndex = Integer.MAX_VALUE;
+                            }
+                        }
+                    } else if (ExamOperation.SET_DOWN_GEAR.equals(examOperationList.get(nextExamOperationIndex).getName())) {
+                        // 判断降档操作
+                        if (nowGear != null && Gear.isSeDownGearOperationName(nowGear.getName(), operationName)) {
+                            synchronized (TcpResponseMessageHandler.class) {
+                                // 成功匹配一个操作，下标后移
+                                nextExamOperationIndex += 1;
+                            }
+                        } else {
+                            // 操作不匹配，直接结束
+                            synchronized (TcpResponseMessageHandler.class) {
+                                hadResult = true;
+                                isCorrect = false;
+                                if (nextExamOperationIndex == 0) {
+                                    resultMessage = "未进行【" + examOperationList.get(0).getDescription() + "】操作";
+                                } else {
+                                    resultMessage = "【" + examOperationList.get(nextExamOperationIndex - 1).getDescription() + "】操作后未进行【" + examOperationList.get(nextExamOperationIndex).getDescription() + "】操作";
+                                }
+                                nextExamOperationIndex = Integer.MAX_VALUE;
+                            }
+                        }
                     } else {
                         // 操作不匹配，直接结束
                         synchronized (TcpResponseMessageHandler.class) {
@@ -293,6 +419,32 @@ public class TcpResponseMessageHandler extends Thread {
                 }
             }
         } else if (TcpResponseMessage.RESPONSE_BASE_STATE.equals(tcpResponseMessage.getTypeName())) {
+            // 汇报车速、里程信息
+            if (tcpResponseMessage.getExamItemOperationName() == null || tcpResponseMessage.getExamItemOperationName().size() == 0) {
+                Map<String, String> dataMap = tcpResponseMessage.getDataMap();
+                if (dataMap == null) {
+                    return;
+                }
+                // 包含速度，则判断是否与档位匹配
+                if (dataMap.containsKey("SPEED")) {
+                    double speed = Double.parseDouble(dataMap.get("SPEED"));
+                    if (nowGear != null && (speed < nowGear.getMinSpeed() || speed > nowGear.getMaxSpeed())) {
+                        // 档位与速度不匹配
+                        ExamUpdateUiBroadcastMessage examUpdateUiBroadcastMessage = new ExamUpdateUiBroadcastMessage();
+                        examUpdateUiBroadcastMessage.setTypeName(ExamUpdateUiBroadcastMessage.EXAM_DEDUCT_POINT);
+                        Map<String, Object> detailMap = new HashMap<>();
+                        detailMap.put("score", 10);
+                        examUpdateUiBroadcastMessage.setData(detailMap);
+                        examUpdateUiBroadcastMessage.setMessage("【" + nowGear.getDescription() + "】档位与【" + speed + "km/h】速度不匹配，扣10分！");
+                        ExamUpdateUiBroadcastUtil.sendBroadcast(ExamingActivity.examingActivity, examUpdateUiBroadcastMessage);
+                    }
+                }
+                // 包含已行驶的路程
+                if (dataMap.containsKey("DISTANCE_TRAVELED")) {
+
+                }
+                return;
+            }
             // 处理汇报基本状态的tcpMessage
             String operationName = tcpResponseMessage.getExamItemOperationName().get(0);
             if (ExamOperation.CLOSE_DOOR.equals(operationName)) {
