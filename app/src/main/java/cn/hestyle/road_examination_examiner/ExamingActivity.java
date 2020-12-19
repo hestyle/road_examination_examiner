@@ -318,6 +318,7 @@ public class ExamingActivity extends AppCompatActivity {
         if ((keyCode == KeyEvent.KEYCODE_BACK)) {
             if (ExamItemProcess.isExaming) {
                 // 如果正在考试中，则不退出
+                Toast.makeText(ExamingActivity.this, "考试中，无法直接返回，请先结束考试再进行操作！", Toast.LENGTH_SHORT).show();
                 return false;
             } else {
                 ExamItemProcess.stopExam();
