@@ -61,6 +61,8 @@ public class TcpResponseMessageHandler extends Thread {
     private static volatile Gear nowGear = null;
     /** 档位配置 */
     private static List<Gear> gearList = null;
+    /** 离合踏板是否踩住 */
+    private static boolean isStepOnClutchPedal = false;
 
     private TcpResponseMessageHandler() {}
 
@@ -77,6 +79,7 @@ public class TcpResponseMessageHandler extends Thread {
         // 获取档位信息
         nowGear = null;
         getAllGear();
+        isStepOnClutchPedal = false;
         // 默认安全带未系上、车门未关闭
         isDoorClosed = false;
         isSeatBeltFasten = false;
@@ -301,6 +304,27 @@ public class TcpResponseMessageHandler extends Thread {
                 ExamUpdateUiBroadcastUtil.sendBroadcast(ExamingActivity.examingActivity, examUpdateUiBroadcastMessage);
                 return;
             }
+            if (ExamOperation.isSetGearOperation(operationName)) {
+                // 如果是换挡操作，更新当前档位
+                if (!isStepOnClutchPedal) {
+                    // 换挡没有踩住离合
+                    ExamUpdateUiBroadcastMessage examUpdateUiBroadcastMessage = new ExamUpdateUiBroadcastMessage();
+                    examUpdateUiBroadcastMessage.setTypeName(ExamUpdateUiBroadcastMessage.EXAM_DEDUCT_POINT);
+                    Map<String, Object> detailMap = new HashMap<>();
+                    detailMap.put("score", 10);
+                    examUpdateUiBroadcastMessage.setData(detailMap);
+                    examUpdateUiBroadcastMessage.setMessage("没有踩住离合换挡，扣10分！");
+                    ExamUpdateUiBroadcastUtil.sendBroadcast(ExamingActivity.examingActivity, examUpdateUiBroadcastMessage);
+                    return;
+                }
+                nowGear = Gear.findGearByOperationName(gearList, operationName);
+            } else if (ExamOperation.STEP_ON_CLUTCH_PEDAL.equals(operationName)) {
+                // 踩住离合
+                isStepOnClutchPedal = true;
+            } else if (ExamOperation.STEP_OFF_CLUTCH_PEDAL.equals(operationName)) {
+                // 松开离合
+                isStepOnClutchPedal = false;
+            }
             // 处理operation操作
             if (ExamItemProcess.isLightExaming) {
                 // 正在灯光考试，只检测灯光操作，其它操作不做评判
@@ -392,12 +416,6 @@ public class TcpResponseMessageHandler extends Thread {
                             nextExamOperationIndex = Integer.MAX_VALUE;
                         }
                     }
-                }
-                // 如果是换挡操作，更新当前档位
-                if (ExamOperation.isSetGearOperation(operationName)) {
-                    Log.e("测试", "处理挂挡" + operationName + " 挂当前" + nowGear);
-                    nowGear = Gear.findGearByOperationName(gearList, operationName);
-                    Log.e("测试", " 挂当后" + nowGear);
                 }
             }
         } else if (TcpResponseMessage.RESPONSE_BASE_STATE.equals(tcpResponseMessage.getTypeName())) {
