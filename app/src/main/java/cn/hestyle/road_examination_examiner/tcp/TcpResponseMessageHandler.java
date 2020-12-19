@@ -378,7 +378,7 @@ public class TcpResponseMessageHandler extends Thread {
                                 if (nextExamOperationIndex == 0) {
                                     resultMessage = "未进行【" + examOperationList.get(0).getDescription() + "】操作";
                                 } else {
-                                    resultMessage = "【" + examOperationList.get(nextExamOperationIndex - 1).getDescription() + "】操作后未进行【" + examOperationList.get(nextExamOperationIndex).getDescription() + "】操作";
+                                    resultMessage = "【" + examOperationList.get(nextExamOperationIndex - 1).getDescription() + "】操作后未进行【" + examOperationList.get(nextExamOperationIndex).getDescription() + "或挂错档位】操作";
                                 }
                                 nextExamOperationIndex = Integer.MAX_VALUE;
                             }
@@ -398,7 +398,7 @@ public class TcpResponseMessageHandler extends Thread {
                                 if (nextExamOperationIndex == 0) {
                                     resultMessage = "未进行【" + examOperationList.get(0).getDescription() + "】操作";
                                 } else {
-                                    resultMessage = "【" + examOperationList.get(nextExamOperationIndex - 1).getDescription() + "】操作后未进行【" + examOperationList.get(nextExamOperationIndex).getDescription() + "】操作";
+                                    resultMessage = "【" + examOperationList.get(nextExamOperationIndex - 1).getDescription() + "】操作后未进行【" + examOperationList.get(nextExamOperationIndex).getDescription() + "或挂错档位】操作";
                                 }
                                 nextExamOperationIndex = Integer.MAX_VALUE;
                             }
