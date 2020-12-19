@@ -77,14 +77,14 @@ public class MyInvigilationFragment extends Fragment {
         dateAscSortRadioButton = examListViewHeaderView.findViewById(R.id.dateAscSortRadioButton);
 
         examListView = root.findViewById(R.id.examListView);
-        examListView.addHeaderView(examListViewHeaderView, null, true);
+        examListView.addHeaderView(examListViewHeaderView, null, false);
         examAdapter = new ExamAdapter();
         examListView.setAdapter(examAdapter);
         examListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent = new Intent(MyInvigilationFragment.this.getActivity(), ExamDetailActivity.class);
-                intent.putExtra("exam", inListData.get(position));
+                intent.putExtra("exam", inListData.get(position - 1));
                 startActivity(intent);
             }
         });
