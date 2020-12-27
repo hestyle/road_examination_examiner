@@ -66,6 +66,8 @@ public class TcpNetWorkServiceThread extends Thread {
                 if (socket.isClosed()) {
                     throw new Exception("socket已关闭");
                 }
+                // 发送紧急数据
+                socket.sendUrgentData(0xF00F);
                 // 发message
                 synchronized (TcpNetWorkServiceThread.class) {
                     // 发送队列中的第一个tcpMessage
